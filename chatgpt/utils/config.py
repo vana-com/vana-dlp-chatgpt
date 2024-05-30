@@ -17,16 +17,12 @@
 
 import argparse
 
-from opendata.chain_manager import ChainManager
-from opendata.config import Config
-from opendata.logging import logging
-from opendata.node_server import NodeServer
-from opendata.wallet import Wallet
+import vana as opendata
 
 
-def check_config(cls, config: Config):
+def check_config(cls, config: opendata.Config):
     r"""Checks/validates the config namespace object."""
-    logging.check_config(config)
+    opendata.logging.check_config(config)
 
 
 def add_args(cls, parser):
@@ -42,7 +38,7 @@ def add_args(cls, parser):
                         type=int,
                         help="The frequency (in number of blocks) to save data on-chain",
                         default=10)  # Every 60 seconds on the testnet
-                        # default=360)
+    # default=360)
 
     parser.add_argument(
         "--node.epoch_length",
@@ -55,7 +51,9 @@ def add_args(cls, parser):
 def add_validator_args(cls, parser):
     """Add validator specific arguments to the parser."""
 
-    parser.add_argument("--dlp.register", type=float, help="Register this validator to the DLP, specifying the amount of stake to post to the DLP", default=None)
+    parser.add_argument("--dlp.register", type=float,
+                        help="Register this validator to the DLP, specifying the amount of stake to post to the DLP",
+                        default=None)
 
     parser.add_argument(
         "--node.name",
@@ -84,9 +82,9 @@ def config(cls):
     Returns the configuration object specific to this miner or validator after adding relevant arguments.
     """
     parser = argparse.ArgumentParser()
-    Wallet.add_args(parser)
-    ChainManager.add_args(parser)
-    logging.add_args(parser)
-    NodeServer.add_args(parser)
+    opendata.Wallet.add_args(parser)
+    opendata.ChainManager.add_args(parser)
+    opendata.logging.add_args(parser)
+    opendata.NodeServer.add_args(parser)
     cls.add_args(parser)
-    return Config(parser)
+    return opendata.Config(parser)

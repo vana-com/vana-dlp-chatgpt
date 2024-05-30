@@ -17,10 +17,10 @@
 
 import typing
 
-from opendata.message import Message
+import vana as opendata
 
 
-class ValidationMessage(Message):
+class ValidationMessage(opendata.Message):
     """
     This is the protocol for the validator to validator communication.
     It is a simple request-response protocol where the validator sends a request

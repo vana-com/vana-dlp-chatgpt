@@ -24,7 +24,7 @@ from typing import List, Dict, Any, Iterable
 from openai import OpenAI
 
 from chatgpt.models.chatgpt import ChatGPTData
-from opendata import logging
+import vana as opendata
 import tiktoken
 
 # Max token size for LLM validation
@@ -168,14 +168,14 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
                 except (json.JSONDecodeError, KeyError, ValueError):
                     retry_count += 1
                     if retry_count == max_retries:
-                        logging.logging.info(f"Failed to get a valid JSON response after {max_retries} retries.")
+                        opendata.logging.info(f"Failed to get a valid JSON response after {max_retries} retries.")
                         return False
 
         avg_conversation_score = sum(chunk_scores) / len(chunk_scores)
         scores.append(avg_conversation_score)
 
     avg_score = sum(scores) / len(scores)
-    logging.logging.info(f"Average LLM validation score: {avg_score}")
+    opendata.logging.info(f"Average LLM validation score: {avg_score}")
 
     return {
         'is_valid': avg_score >= threshold_score,
@@ -217,7 +217,7 @@ def validate_file_structure(zip_ref, required_files):
                     if 'id' not in user_data or 'email' not in user_data:
                         raise ValueError(f"Invalid user.json: missing required fields")
         except (KeyError, ValueError) as e:
-            logging.info(f"Validation failed for {file}: {str(e)}")
+            opendata.logging.info(f"Validation failed for {file}: {str(e)}")
             return False
     return True
 

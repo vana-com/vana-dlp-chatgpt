@@ -20,11 +20,12 @@ We are building towards a user-owned foundation model, trained by 100M users who
 
 ## Getting Started
 
-To get started with Vana, follow these steps:
+To get started with the ChatGPT DLP, follow these steps:
 
 1. Clone the repository:
 ```shell
-   git clone https://github.com/vana-com/vana-network.git
+   git clone https://github.com/vana-com/vana-dlp-chatgpt.git
+   git submodule update --init --recursive
 ```
 
 2. Install the required dependencies using poetry:

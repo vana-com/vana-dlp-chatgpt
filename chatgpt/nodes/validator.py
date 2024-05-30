@@ -27,14 +27,12 @@ from traceback import print_exception
 
 import gnupg
 import requests
+import vana as opendata
 
 import chatgpt.protocol
-import opendata
 from chatgpt.nodes.base_node import BaseNode
 from chatgpt.utils.config import add_validator_args
 from chatgpt.utils.validator import validate_chatgpt_zip, as_wad
-from opendata import logging, NodeServer
-from opendata.node_client import NodeClient
 
 
 class Validator(BaseNode):
@@ -54,13 +52,13 @@ class Validator(BaseNode):
 
         # TODO: this conditional was added mindlessly to prevent crashes and may need to be refactored
         if self.wallet:
-            self.node_client = NodeClient(wallet=self.wallet)
+            self.node_client = opendata.NodeClient(wallet=self.wallet)
 
             # Init sync with the network. Updates the state.
             self.sync()
 
             # Serve NodeServer to enable external connections.
-            self.node_server = ((NodeServer(wallet=self.wallet, config=self.config)
+            self.node_server = ((opendata.NodeServer(wallet=self.wallet, config=self.config)
                                  .attach(self.validate)
                                  .serve(dlp_uid=self.config.dlpuid, chain_manager=self.chain_manager))
                                 .start())
@@ -74,7 +72,7 @@ class Validator(BaseNode):
             self.thread: threading.Thread = None
             self.lock = asyncio.Lock()
 
-            logging.info(
+            opendata.logging.info(
                 f"Running validator {self.node_server} on network: {self.config.chain.chain_endpoint} with dlpuid: {self.config.dlpuid}"
             )
 
@@ -84,7 +82,7 @@ class Validator(BaseNode):
         :param message: The validation message
         :return: The validation message with the output fields filled
         """
-        logging.info(f"Received {message.input_url} and encrypted key: {message.input_encryption_key}")
+        opendata.logging.info(f"Received {message.input_url} and encrypted key: {message.input_encryption_key}")
 
         # Download the file
         temp_dir = tempfile.mkdtemp()
@@ -92,7 +90,7 @@ class Validator(BaseNode):
         response = requests.get(message.input_url)
 
         if response.status_code != 200:
-            logging.error(f"Failed to download file from {message.input_url}")
+            opendata.logging.error(f"Failed to download file from {message.input_url}")
             message.output_is_valid = False
             message.output_file_score = 0
         else:
@@ -107,13 +105,13 @@ class Validator(BaseNode):
             # Import the private key into the gnupg keyring
             gpg = gnupg.GPG()
             import_result = gpg.import_keys(private_key_bytes)
-            logging.info(f"Private key import result: {import_result}")
+            opendata.logging.info(f"Private key import result: {import_result}")
 
             # Decrypt the symmetric key using the private key and gnupg library
             decrypted_symmetric_key = gpg.decrypt(encrypted_symmetric_key)
 
             # Print decrypted symmetric key
-            logging.info(f"Decrypted symmetric key: {decrypted_symmetric_key.data}")
+            opendata.logging.info(f"Decrypted symmetric key: {decrypted_symmetric_key.data}")
 
             # Decrypt the file using the symmetric key
             decrypted_file_path = os.path.join(temp_dir, "decrypted_data.zip")
@@ -121,7 +119,7 @@ class Validator(BaseNode):
                 # Decrypt the file using the decrypted symmetric key bytes and gnupg library
                 decrypted_data = gpg.decrypt_file(encrypted_file,
                                                   passphrase=decrypted_symmetric_key.data.decode('utf-8'))
-                logging.info(f"Decryption status: {decrypted_data.status}")
+                opendata.logging.info(f"Decryption status: {decrypted_data.status}")
                 # Write decrypted data to the decrypted file
                 decrypted_file.write(decrypted_data.data)
 
@@ -130,22 +128,22 @@ class Validator(BaseNode):
                 # Validate the decrypted file
                 validation_result = validate_chatgpt_zip(decrypted_file_path)
 
-                logging.info(f"Validation result: {validation_result}")
+                opendata.logging.info(f"Validation result: {validation_result}")
 
                 message.output_is_valid = validation_result["is_valid"]
                 message.output_file_score = validation_result["score"]
 
                 return message
             except Exception as e:
-                logging.error(f"Error during validation, assuming file is invalid: {e}")
-                logging.error(traceback.format_exc())
+                opendata.logging.error(f"Error during validation, assuming file is invalid: {e}")
+                opendata.logging.error(traceback.format_exc())
                 message.output_is_valid = False
                 message.output_file_score = 0
             finally:
                 # Clean up
                 os.remove(file_path)  # Remove the downloaded file
                 os.remove(decrypted_file_path)  # Remove the decrypted file
-                logging.info(f"Encrypted and decrypted data removed from the node")
+                opendata.logging.info(f"Encrypted and decrypted data removed from the node")
 
         return message
 
@@ -162,16 +160,16 @@ class Validator(BaseNode):
             # Get the next file to verify
             get_next_file_to_verify_output = self.dlp_contract.functions.getNextFileToVerify(validator_address).call()
             if get_next_file_to_verify_output is None:
-                logging.error("No files to verify.")
+                opendata.logging.error("No files to verify.")
                 return
 
             file_id, input_url, input_encryption_key, _ = get_next_file_to_verify_output
             if file_id == 0:
-                logging.info("Received file_id 0. No files to verify. Sleeping for 5 seconds.")
+                opendata.logging.info("Received file_id 0. No files to verify. Sleeping for 5 seconds.")
                 time.sleep(5)
                 return
 
-            logging.debug(
+            opendata.logging.debug(
                 f"Received file_id: {file_id}, input_url: {input_url}, input_encryption_key: {input_encryption_key}")
 
             # TODO: Define how the validator selects a which other validators to query, how often, etc.
@@ -186,7 +184,7 @@ class Validator(BaseNode):
             )
 
             # TODO: Define how the validator scores responses, calculates rewards and updates the scores
-            logging.info(f"Received responses: {responses}")
+            opendata.logging.info(f"Received responses: {responses}")
 
             def majority_is_valid(results: list[chatgpt.protocol.ValidationMessage]) -> bool:
                 true_count = sum(1 for result in results if result.output_is_valid)
@@ -216,15 +214,15 @@ class Validator(BaseNode):
                 }
                 self.state.add_weight(response.node_server.hotkey, calculate_validator_score(response))
 
-            logging.info(f"File is valid: {is_file_valid}, mean score: {mean_score}")
+            opendata.logging.info(f"File is valid: {is_file_valid}, mean score: {mean_score}")
 
             # Call verifyFile function on the DLP contract to set the file's score and metadata
             verify_file_fn = self.dlp_contract.functions.verifyFile(file_id, as_wad(mean_score), f"{metadata}")
             self.chain_manager.send_transaction(verify_file_fn, self.wallet.hotkey)
 
         except Exception as e:
-            logging.error(f"Error during forward process: {e}")
-            logging.error(traceback.format_exc())
+            opendata.logging.error(f"Error during forward process: {e}")
+            opendata.logging.error(traceback.format_exc())
             time.sleep(5)
 
     async def concurrent_forward(self):
@@ -253,7 +251,7 @@ class Validator(BaseNode):
             # Check that validator is registered on the network.
             self.sync()
 
-            logging.info(f"Validator starting at block: {self.block}")
+            opendata.logging.info(f"Validator starting at block: {self.block}")
 
         if self.config.dlp.register:
             opendata.logging.info(f"Registering, staking {self.config.dlp.register} tokens.")
@@ -266,7 +264,7 @@ class Validator(BaseNode):
             while True:
                 # TODO: this conditional was added mindlessly to prevent crashes and may need to be refactored
                 if self.chain_manager:
-                    logging.info(f"step({self.step}) block({self.block})")
+                    opendata.logging.info(f"step({self.step}) block({self.block})")
 
                     # Run multiple forwards concurrently.
                     self.loop.run_until_complete(self.concurrent_forward())
@@ -282,16 +280,16 @@ class Validator(BaseNode):
 
         # If someone intentionally stops the validator, it'll safely terminate operations.
         except KeyboardInterrupt:
-            if self.node_server:
+            if hasattr(self, 'node_server') and self.node_server:
                 self.node_server.stop()
                 self.node_server.unserve(dlp_uid=self.config.dlpuid, chain_manager=self.chain_manager)
-            logging.success("Validator killed by keyboard interrupt.")
+            opendata.logging.success("Validator killed by keyboard interrupt.")
             exit()
 
         # In case of unforeseen errors, the validator will log the error and continue operations.
         except Exception as err:
-            logging.error("Error during validation", str(err))
-            logging.debug(
+            opendata.logging.error("Error during validation", str(err))
+            opendata.logging.debug(
                 print_exception(type(err), err, err.__traceback__)
             )
 
@@ -301,23 +299,23 @@ class Validator(BaseNode):
         This method facilitates the use of the validator in a 'with' statement.
         """
         if not self.is_running:
-            logging.debug("Starting validator in background thread.")
+            opendata.logging.debug("Starting validator in background thread.")
             self.should_exit = False
             self.thread = threading.Thread(target=self.run, daemon=True)
             self.thread.start()
             self.is_running = True
-            logging.debug("Started")
+            opendata.logging.debug("Started")
 
     def stop_run_thread(self):
         """
         Stops the validator's operations that are running in the background thread.
         """
         if self.is_running:
-            logging.debug("Stopping validator in background thread.")
+            opendata.logging.debug("Stopping validator in background thread.")
             self.should_exit = True
             self.thread.join(5)
             self.is_running = False
-            logging.debug("Stopped")
+            opendata.logging.debug("Stopped")
 
     def __enter__(self):
         self.run_in_background_thread()
@@ -337,11 +335,11 @@ class Validator(BaseNode):
                        None if the context was exited without an exception.
         """
         if self.is_running:
-            logging.debug("Stopping validator in background thread.")
+            opendata.logging.debug("Stopping validator in background thread.")
             self.should_exit = True
             self.thread.join(5)
             self.is_running = False
-            logging.debug("Stopped")
+            opendata.logging.debug("Stopped")
 
     def resync_state(self):
         self.state.sync(chain_manager=self.chain_manager)
