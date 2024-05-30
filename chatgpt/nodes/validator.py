@@ -50,7 +50,6 @@ class Validator(BaseNode):
     def __init__(self, config=None):
         super().__init__(config=config)
 
-        # TODO: this conditional was added mindlessly to prevent crashes and may need to be refactored
         if self.wallet:
             self.node_client = opendata.NodeClient(wallet=self.wallet)
 
@@ -59,7 +58,7 @@ class Validator(BaseNode):
 
             # Serve NodeServer to enable external connections.
             self.node_server = ((opendata.NodeServer(wallet=self.wallet, config=self.config)
-                                 .attach(self.validate)
+                                 .attach(self.proof_of_contribution)
                                  .serve(dlp_uid=self.config.dlpuid, chain_manager=self.chain_manager))
                                 .start())
 
@@ -76,9 +75,10 @@ class Validator(BaseNode):
                 f"Running validator {self.node_server} on network: {self.config.chain.chain_endpoint} with dlpuid: {self.config.dlpuid}"
             )
 
-    async def validate(self, message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
+    async def proof_of_contribution(self,
+                                    message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
         """
-        Processes a validation request
+        Proof of Contribution: Processes a validation request
         :param message: The validation message
         :return: The validation message with the output fields filled
         """
@@ -123,7 +123,6 @@ class Validator(BaseNode):
                 # Write decrypted data to the decrypted file
                 decrypted_file.write(decrypted_data.data)
 
-            # TODO: this try-catch block was added mindlessly to prevent crashes and may need to be refactored
             try:
                 # Validate the decrypted file
                 validation_result = validate_chatgpt_zip(decrypted_file_path)
@@ -132,6 +131,12 @@ class Validator(BaseNode):
 
                 message.output_is_valid = validation_result["is_valid"]
                 message.output_file_score = validation_result["score"]
+
+                # TODO: Implement ownership check via sharing a chat with the user's wallet address,
+                #  and scraping it to ensure the wallet owner owns the Zip file
+
+                # TODO: Implement a similarity check to ensure the file is not a duplicate
+                #  (or very similar) to a previously validated file
 
                 return message
             except Exception as e:
