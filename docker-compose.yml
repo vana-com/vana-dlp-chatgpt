@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  node1:
+    build:
+      context: .
+      dockerfile: Dockerfile.validator
+    environment:
+      - REDIS_PERSONAL_NS=yourname-local
+      - OD_NODESERVER_EXTERNAL_IP=yourhost  # This cannot be localhost, 127.0.0.1, 0.0.0.0, etc., because those won't resolve to the host machine from within the container.
+      - OD_NODESERVER_EXTERNAL_PORT=5555
+      - OD_NODESERVER_PORT=5555
+    networks:
+      - n1
+    ports:
+      - "5555:5555"  # For now, these should be the same because requests within the container to itself are not routed through the host machine and therefore the port mapping does not apply.
+
+  node2:
+    build:
+      context: .
+      dockerfile: Dockerfile.validator
+    environment:
+      - REDIS_PERSONAL_NS=yourname-local
+      - OD_NODESERVER_EXTERNAL_IP=yourhost  # This cannot be localhost, 127.0.0.1, 0.0.0.0, etc., because those won't resolve to the host machine from within the container.
+      - OD_NODESERVER_EXTERNAL_PORT=5556
+      - OD_NODESERVER_PORT=5556
+    networks:
+      - n2
+    ports:
+      - "5556:5556"  # For now, these should be the same because requests within the container to itself are not routed through the host machine and therefore the port mapping does not apply.
+
+  node3:
+    build:
+      context: .
+      dockerfile: Dockerfile.validator
+    environment:
+      - REDIS_PERSONAL_NS=yourname-local
+      - OD_NODESERVER_EXTERNAL_IP=yourhost  # This cannot be localhost, 127.0.0.1, 0.0.0.0, etc., because those won't resolve to the host machine from within the container.
+      - OD_NODESERVER_EXTERNAL_PORT=5557
+      - OD_NODESERVER_PORT=5557
+    networks:
+      - n3
+    ports:
+      - "5557:5557"  # For now, these should be the same because requests within the container to itself are not routed through the host machine and therefore the port mapping does not apply.
+
+# Trying to keep the containers on separate networks to force them to communicate through the host machine. Not sure if it helps...
+networks:
+  n1:
+    driver: bridge
+  n2:
+    driver: bridge
+  n3:
+    driver: bridge

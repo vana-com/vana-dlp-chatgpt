@@ -1,0 +1,18 @@
+FROM python:3.11-slim-buster
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+COPY . /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gnupg && \
+    apt-get install -y vim && \
+    rm -rf /var/lib/apt/lists/*
+RUN pip install poetry --no-cache-dir
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-interaction --no-ansi
+
+CMD poetry run python -m chatgpt.nodes.validator
