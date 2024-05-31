@@ -104,7 +104,7 @@ class BaseNode(ABC):
                 opendata.logging.info(f"Chain Manager: {self.chain_manager}")
 
                 # Check if the validator is registered on the network before proceeding further.
-                self.check_registered()
+                # self.check_registered()
 
                 opendata.logging.info(
                     f"Running node on data liquidity pool: {self.config.dlpuid} with hotkey {self.wallet.hotkey.address} using network: {self.chain_manager.config.chain_endpoint}")

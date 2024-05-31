@@ -250,6 +250,11 @@ class Validator(BaseNode):
         """
         Initiates and manages the main loop for the validator on the network.
         """
+        if self.config.dlp.register:
+            opendata.logging.info(f"Registering, staking {self.config.dlp.register} tokens.")
+            self.loop.run_until_complete(self.register_validator(self.config.dlp.register))
+            opendata.logging.success(f"Staked {self.config.dlp.register} tokens.")
+            exit()
 
         # TODO: this conditional was added mindlessly to prevent crashes and may need to be refactored
         if self.chain_manager:
@@ -257,12 +262,6 @@ class Validator(BaseNode):
             self.sync()
 
             opendata.logging.info(f"Validator starting at block: {self.block}")
-
-        if self.config.dlp.register:
-            opendata.logging.info(f"Registering, staking {self.config.dlp.register} tokens.")
-            self.loop.run_until_complete(self.register_validator(self.config.dlp.register))
-            opendata.logging.success(f"Staked {self.config.dlp.register} tokens.")
-            exit()
 
         # This loop maintains the validator's operations until intentionally stopped.
         try:
