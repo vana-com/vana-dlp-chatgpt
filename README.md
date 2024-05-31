@@ -24,13 +24,12 @@ To get started with the ChatGPT DLP, follow these steps:
 
 1. Clone the repository:
 ```shell
-   git clone https://github.com/vana-com/vana-dlp-chatgpt.git
-   git submodule update --init --recursive
+git clone https://github.com/vana-com/vana-dlp-chatgpt.git
 ```
 
 2. Install the required dependencies using poetry:
 ```shell
-   poetry install
+poetry install
 ```
 3. Configure the environment variables by copying and modifying the `.env.example` file:
 
