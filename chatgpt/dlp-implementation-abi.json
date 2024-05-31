@@ -21,6 +21,11 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "AddingFilePaused",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -108,6 +113,11 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "NotValidatorColdKey",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -157,13 +167,52 @@
   },
   {
     "inputs": [],
-    "name": "ValidatorAlreadyApproved",
+    "name": "ValidatorAlreadyRegistered",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "ValidatorAlreadyRegistered",
+    "name": "ValidatorNotRegistered",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "epochId",
+        "type": "uint256"
+      }
+    ],
+    "name": "EpochCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newEpochRewardAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "EpochRewardAmountUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newEpochSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "EpochSizeUpdated",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -239,6 +288,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newMaxNumberOfValidators",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxNumberOfValidatorsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -265,19 +327,6 @@
       }
     ],
     "name": "Paused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rewardPeriodId",
-        "type": "uint256"
-      }
-    ],
-    "name": "RewardPeriodCreated",
     "type": "event"
   },
   {
@@ -429,6 +478,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newValidationPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "ValidationPeriodUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "validatorAddress",
@@ -436,6 +498,19 @@
       }
     ],
     "name": "ValidatorApproved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ValidatorDeregistered",
     "type": "event"
   },
   {
@@ -458,15 +533,61 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      },
+      }
+    ],
+    "name": "ValidatorRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "totalAmount",
+        "name": "newValidatorScoreKappa",
         "type": "uint256"
       }
     ],
-    "name": "ValidatorRegisterd",
+    "name": "ValidatorScoreKappaUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newValidatorScoreMinTrust",
+        "type": "uint256"
+      }
+    ],
+    "name": "ValidatorScoreMinTrustUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newValidatorScoreRho",
+        "type": "uint256"
+      }
+    ],
+    "name": "ValidatorScoreRhoUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ValidatorUnregisterd",
     "type": "event"
   },
   {
@@ -491,7 +612,7 @@
         "type": "uint256[]"
       }
     ],
-    "name": "WeightUpdated",
+    "name": "WeightsUpdated",
     "type": "event"
   },
   {
@@ -523,44 +644,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "newValidatorAddress",
-        "type": "address"
-      }
-    ],
-    "name": "acceptValidator",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "listId",
-        "type": "uint256"
-      }
-    ],
-    "name": "activeValidatorListCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "count",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
       }
     ],
-    "name": "activeValidatorLists",
+    "name": "activeValidatorsLists",
     "outputs": [
       {
         "internalType": "address[]",
@@ -573,7 +662,7 @@
   },
   {
     "inputs": [],
-    "name": "activeValidatorListsCount",
+    "name": "activeValidatorsListsCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -611,9 +700,163 @@
   },
   {
     "inputs": [],
-    "name": "createRewardPeriods",
+    "name": "addingFilePaused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "approveValidator",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "createEpochs",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "createEpochsUntilBlockNumber",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "deregisterValidator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "epochRewardAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "epochId",
+        "type": "uint256"
+      }
+    ],
+    "name": "epochRewards",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "validators",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "shares",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "withdrawnAmounts",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "epochSize",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "epochId",
+        "type": "uint256"
+      }
+    ],
+    "name": "epochs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "startBlock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "endBlock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "validatorsListId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "epochsCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -682,12 +925,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "addedTime",
+        "name": "addedTimestamp",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "verificationsLength",
+        "name": "verificationsCount",
         "type": "uint256"
       }
     ],
@@ -696,7 +939,7 @@
   },
   {
     "inputs": [],
-    "name": "getCurrentRewardPeriodValidators",
+    "name": "filesCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -711,35 +954,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "rewardPeriodNumer",
+        "name": "epochNumber",
         "type": "uint256"
       }
     ],
     "name": "getEmissionScores",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256[][]",
-        "name": "W",
-        "type": "uint256[][]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "S",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "getEmissionScoresOld",
     "outputs": [
       {
         "internalType": "uint256[]",
@@ -761,48 +980,36 @@
     "name": "getNextFileToVerify",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "fileId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "url",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "encryptedKey",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "addedTime",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "period",
-        "type": "uint256"
-      }
-    ],
-    "name": "getRewardPeriodValidatorRewards",
-    "outputs": [
-      {
-        "internalType": "address[]",
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "fileId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "encryptedKey",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "addedTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "assignedValidator",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.NextFileToVerify",
         "name": "",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -822,25 +1029,6 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "validatorAddress",
-        "type": "address"
-      }
-    ],
-    "name": "getWeightsAssignedByValidator",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -932,12 +1120,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "newRewardPeriodSize",
+        "name": "newEpochSize",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "newRewardAmount",
+        "name": "newEpochRewardAmount",
         "type": "uint256"
       }
     ],
@@ -983,65 +1171,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "validatorAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fileId",
-        "type": "uint256"
-      }
-    ],
-    "name": "overrideLastVerifiedFileId",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "validatorAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "overrideStake",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "validators",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "weights",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "overrideWeights",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1126,7 +1255,7 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1142,7 +1271,7 @@
         "type": "address"
       }
     ],
-    "name": "registerAsValidator",
+    "name": "registerValidator",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -1191,79 +1320,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "rewardAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "rewardPeriodSize",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "period",
-        "type": "uint256"
-      }
-    ],
-    "name": "rewardPeriods",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "startBlock",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "endBlock",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "validatorListId",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "rewardPeriodsCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "string",
@@ -1272,13 +1328,7 @@
       }
     ],
     "name": "setMasterKey",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -1351,11 +1401,89 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "newEpochRewardAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateEpochRewardAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newEpochSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateEpochSize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "newMaxNumberOfValidators",
         "type": "uint256"
       }
     ],
     "name": "updateMaxNumberOfValidators",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newValidationPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateValidationPeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newValidatorScoreKappa",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateValidatorScoreKappa",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newValidatorScoreMinTrust",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateValidatorScoreMinTrust",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newValidatorScoreRho",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateValidatorScoreRho",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1420,11 +1548,6 @@
     "name": "validatorInfo",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "ownerAddress",
         "type": "address"
@@ -1441,7 +1564,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "lastVerifiedFileId",
+        "name": "filesToVerifyIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "filesToVerifyCount",
         "type": "uint256"
       }
     ],
@@ -1488,13 +1616,37 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "validators",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "validatorWeights",
     "outputs": [
       {
         "internalType": "address[]",
-        "name": "",
+        "name": "validators",
         "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "weights",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "validatorsCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

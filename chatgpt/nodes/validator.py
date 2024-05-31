@@ -168,14 +168,14 @@ class Validator(BaseNode):
                 vana.logging.error("No files to verify.")
                 return
 
-            file_id, input_url, input_encryption_key, _ = get_next_file_to_verify_output
+            file_id, input_url, input_encryption_key, added_time, assigned_validator = get_next_file_to_verify_output
             if file_id == 0:
                 vana.logging.info("Received file_id 0. No files to verify. Sleeping for 5 seconds.")
                 time.sleep(5)
                 return
 
             vana.logging.debug(
-                f"Received file_id: {file_id}, input_url: {input_url}, input_encryption_key: {input_encryption_key}")
+                f"Received file_id: {file_id}, input_url: {input_url}, input_encryption_key: {input_encryption_key}, added_time: {added_time}, assigned_validator: {assigned_validator}")
 
             # TODO: Define how the validator selects a which other validators to query, how often, etc.
             node_servers = self.chain_manager.get_active_node_servers(omit=[self.node_server.info()])
@@ -243,7 +243,7 @@ class Validator(BaseNode):
 
         validator_address = self.wallet.hotkey.address
         validator_owner_address = self.wallet.coldkeypub.to_checksum_address()
-        registration_fn = self.dlp_contract.functions.registerAsValidator(validator_address, validator_owner_address)
+        registration_fn = self.dlp_contract.functions.registerValidator(validator_address, validator_owner_address)
         self.chain_manager.send_transaction(registration_fn, self.wallet.hotkey)
 
     def run(self):
