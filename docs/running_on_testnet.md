@@ -32,7 +32,13 @@ vanacli wallet create
 > wallet name: owner
 > hotkey name: default
 > password: <password>
+```
 
+It may take a moment to generate the wallet. Remember to save your mnemonic phrase.
+
+Generate wallets for two validators you will run, too:
+
+```bash
 # Create a wallet for a validator running on port 4000
 vanacli wallet create
 > wallet name: validator_4000
@@ -48,14 +54,22 @@ vanacli wallet create
 
 ## Fund Wallets
 
-Wallets must be funded for registering and validating on the testnet. To fund your wallets, you can use the testnet
-faucet available at https://faucet.vana.com, or ask a DAT holder to send you some test DAT tokens. The hotkey must be
-funded, but funding the coldkey is optional.
+Get your wallet address for all three accounts
+```bash
+> jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
+> jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
+> jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
+```
 
-## Deploy a copy of the ChatGPT DLP smart contracts on Testnet
+Use the testnet faucet available at https://faucet.vana.com to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
 
-To ensure your validators do not interfere with other ChatGPT validators, you must deploy a copy of the ChatGPT DLP
-smart contracts on the testnet and register your validators through that smart contract.
+For convenience, you may want to get testnet DAT sent over to your metamask wallet, then send DAT from your metamask wallet to these three wallets. 
+
+You are funding the hotkey wallets for use on the network.
+
+## Deploy your own DLP smart contracts on Testnet
+
+You're now ready to deploy a DLP smart contract, creating your own data DAO. You will then register two validators through the smart contract. The validators will be running proof of contribution. 
 
 1. Install hardhat: https://hardhat.org/hardhat-runner/docs/getting-started#installation
 2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/dlp-smart-contracts/
@@ -65,14 +79,16 @@ smart contracts on the testnet and register your validators through that smart c
 yarn install
 ```
 
-4. Create an `.env` file
+4. Create an `.env` file. You will need the owner address and private key. 
+
+```bash
+cat ~/.vana/wallets/owner/hotkeys/default
+```
+Copy the address and private key over to the .env file: 
 ```.env
-DEPLOYER_PRIVATE_KEY=8...7
+DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
-BACKEND_WALLET_ADDRESS=0x06...5
 VANA_TESTNET_URL=http://34.172.243.254:8545
-VANA_TESTNET_API_URL=http://vanascan.io/api
-VANA_TESTNET_BROWSER_URL=http://vanascan.io/
 ```
 5. Deploy smart contract
 
@@ -80,7 +96,7 @@ VANA_TESTNET_BROWSER_URL=http://vanascan.io/
 npx hardhat deploy --network vanaTestnet --tags DLPDeploy
 ```
 
-6. Copy the deployed smart contract address
+6. Congratulations, you've deployed the DLP smart contract. You can confirm it's up by searching the address on the block explorer: https://satori.vanascan.io/ . Copy the deployed smart contract address. 
 
 ## Register Validators
 
