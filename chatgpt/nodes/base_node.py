@@ -168,8 +168,8 @@ class BaseNode(ABC):
         self.chain_manager.send_transaction(update_weights_fn, self.wallet.hotkey)
 
     def check_registered(self):
-        validator_count = self.dlp_contract.functions.activeValidatorListsCount().call()
-        active_validator_addresses: list[str] = self.dlp_contract.functions.activeValidatorLists(validator_count).call()
+        validator_count = self.dlp_contract.functions.activeValidatorsListsCount().call()
+        active_validator_addresses: list[str] = self.dlp_contract.functions.activeValidatorsLists(validator_count).call()
         self.state.set_hotkeys(active_validator_addresses)
 
         if not active_validator_addresses.__contains__(self.wallet.hotkey.address):

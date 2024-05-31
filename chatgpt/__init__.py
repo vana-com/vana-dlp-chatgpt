@@ -21,5 +21,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-__dlp_vana_contract__ = os.environ.get("DLP_CONTRACT_ADDRESS", "0xf9215f0f774b6dBcd0209e24Df3aE182E9813fd7")
+# TODO: separate vana testnet and mainnet addresses
+ __dlp_vana_contract__ = os.environ.get("DLP_CONTRACT_ADDRESS", "0x4e950420bdC60355Bbd34216DA5F6F77E73E9F8F")
 __dlp_base_sepolia_contract__ = "0x575dBF6B355B32B7ef94570572965EABA210CcBB"

@@ -243,7 +243,7 @@ class Validator(BaseNode):
 
         validator_address = self.wallet.hotkey.address
         validator_owner_address = self.wallet.coldkeypub.to_checksum_address()
-        registration_fn = self.dlp_contract.functions.registerAsValidator(validator_address, validator_owner_address)
+        registration_fn = self.dlp_contract.functions.registerValidator(validator_address, validator_owner_address)
         self.chain_manager.send_transaction(registration_fn, self.wallet.hotkey)
 
     def run(self):
