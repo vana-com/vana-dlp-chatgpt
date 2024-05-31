@@ -15,10 +15,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
 
 load_dotenv()
 
-__dlp_vana_contract__ = os.environ["DLP_CONTRACT_ADDRESS"]
+__dlp_vana_contract__ = os.environ.get("DLP_CONTRACT_ADDRESS", "0xf9215f0f774b6dBcd0209e24Df3aE182E9813fd7")
 __dlp_base_sepolia_contract__ = "0x575dBF6B355B32B7ef94570572965EABA210CcBB"

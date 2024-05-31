@@ -17,12 +17,12 @@
 
 import argparse
 
-import vana as opendata
+import vana
 
 
-def check_config(cls, config: opendata.Config):
+def check_config(cls, config: vana.Config):
     r"""Checks/validates the config namespace object."""
-    opendata.logging.check_config(config)
+    vana.logging.check_config(config)
 
 
 def add_args(cls, parser):
@@ -82,9 +82,9 @@ def config(cls):
     Returns the configuration object specific to this miner or validator after adding relevant arguments.
     """
     parser = argparse.ArgumentParser()
-    opendata.Wallet.add_args(parser)
-    opendata.ChainManager.add_args(parser)
-    opendata.logging.add_args(parser)
-    opendata.NodeServer.add_args(parser)
+    vana.Wallet.add_args(parser)
+    vana.ChainManager.add_args(parser)
+    vana.logging.add_args(parser)
+    vana.NodeServer.add_args(parser)
     cls.add_args(parser)
-    return opendata.Config(parser)
+    return vana.Config(parser)
