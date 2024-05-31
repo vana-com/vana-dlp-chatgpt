@@ -169,7 +169,10 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
                     retry_count += 1
                     if retry_count == max_retries:
                         opendata.logging.info(f"Failed to get a valid JSON response after {max_retries} retries.")
-                        return False
+                        return {
+                            'is_valid': False,
+                            'score': 0
+                        }
 
         avg_conversation_score = sum(chunk_scores) / len(chunk_scores)
         scores.append(avg_conversation_score)
