@@ -54,7 +54,7 @@ class Validator(BaseNode):
             self.node_client = opendata.NodeClient(wallet=self.wallet)
 
             # Init sync with the network. Updates the state.
-            self.sync()
+            self.sync(skip_registration_check=True)
 
             # Serve NodeServer to enable external connections.
             self.node_server = ((opendata.NodeServer(wallet=self.wallet, config=self.config)

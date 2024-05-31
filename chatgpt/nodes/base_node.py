@@ -132,7 +132,7 @@ class BaseNode(ABC):
     def resync_state(self):
         ...
 
-    def sync(self):
+    def sync(self, skip_registration_check=False):
         """
         Wrapper for synchronizing the state of the network for the given miner or validator.
         """
@@ -144,7 +144,8 @@ class BaseNode(ABC):
         self.last_synced_block = current_block
 
         # Ensure validator hotkey is still registered on the network.
-        self.check_registered()
+        if skip_registration_check is False:
+            self.check_registered()
 
         if self.should_sync_state():
             self.resync_state()
