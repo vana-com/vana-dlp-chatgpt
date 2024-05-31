@@ -32,7 +32,8 @@ import vana
 import chatgpt.protocol
 from chatgpt.nodes.base_node import BaseNode
 from chatgpt.utils.config import add_validator_args
-from chatgpt.utils.validator import validate_chatgpt_zip, as_wad
+from chatgpt.utils.proof_of_contribution import proof_of_contribution
+from chatgpt.utils.validator import as_wad
 
 
 class Validator(BaseNode):
@@ -58,7 +59,7 @@ class Validator(BaseNode):
 
             # Serve NodeServer to enable external connections.
             self.node_server = ((vana.NodeServer(wallet=self.wallet, config=self.config)
-                                 .attach(self.proof_of_contribution)
+                                 .attach(self.validate)
                                  .serve(dlp_uid=self.config.dlpuid, chain_manager=self.chain_manager))
                                 .start())
 
@@ -75,82 +76,16 @@ class Validator(BaseNode):
                 f"Running validator {self.node_server} on network: {self.config.chain.chain_endpoint} with dlpuid: {self.config.dlpuid}"
             )
 
-    async def proof_of_contribution(self,
-                                    message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
+    async def validate(self,
+                       message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
         """
         Proof of Contribution: Processes a validation request
         :param message: The validation message
         :return: The validation message with the output fields filled
         """
         vana.logging.info(f"Received {message.input_url} and encrypted key: {message.input_encryption_key}")
+        return await proof_of_contribution(message)
 
-        # Download the file
-        temp_dir = tempfile.mkdtemp()
-        file_path = os.path.join(temp_dir, "data.zip")
-        response = requests.get(message.input_url)
-
-        if response.status_code != 200:
-            vana.logging.error(f"Failed to download file from {message.input_url}")
-            message.output_is_valid = False
-            message.output_file_score = 0
-        else:
-            with open(file_path, 'wb') as f:
-                f.write(response.content)
-
-            # Decode symmetric key from base64 and decrypt it using private key
-            encrypted_symmetric_key = base64.b64decode(message.input_encryption_key)
-            private_key_base64 = os.environ["PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64"]
-            private_key_bytes = base64.b64decode(private_key_base64)
-
-            # Import the private key into the gnupg keyring
-            gpg = gnupg.GPG()
-            import_result = gpg.import_keys(private_key_bytes)
-            vana.logging.info(f"Private key import result: {import_result}")
-
-            # Decrypt the symmetric key using the private key and gnupg library
-            decrypted_symmetric_key = gpg.decrypt(encrypted_symmetric_key)
-
-            # Print decrypted symmetric key
-            vana.logging.info(f"Decrypted symmetric key: {decrypted_symmetric_key.data}")
-
-            # Decrypt the file using the symmetric key
-            decrypted_file_path = os.path.join(temp_dir, "decrypted_data.zip")
-            with open(file_path, 'rb') as encrypted_file, open(decrypted_file_path, 'wb') as decrypted_file:
-                # Decrypt the file using the decrypted symmetric key bytes and gnupg library
-                decrypted_data = gpg.decrypt_file(encrypted_file,
-                                                  passphrase=decrypted_symmetric_key.data.decode('utf-8'))
-                vana.logging.info(f"Decryption status: {decrypted_data.status}")
-                # Write decrypted data to the decrypted file
-                decrypted_file.write(decrypted_data.data)
-
-            try:
-                # Validate the decrypted file
-                validation_result = validate_chatgpt_zip(decrypted_file_path)
-
-                vana.logging.info(f"Validation result: {validation_result}")
-
-                message.output_is_valid = validation_result["is_valid"]
-                message.output_file_score = validation_result["score"]
-
-                # TODO: Implement ownership check via sharing a chat with the user's wallet address,
-                #  and scraping it to ensure the wallet owner owns the Zip file
-
-                # TODO: Implement a similarity check to ensure the file is not a duplicate
-                #  (or very similar) to a previously validated file
-
-                return message
-            except Exception as e:
-                vana.logging.error(f"Error during validation, assuming file is invalid: {e}")
-                vana.logging.error(traceback.format_exc())
-                message.output_is_valid = False
-                message.output_file_score = 0
-            finally:
-                # Clean up
-                os.remove(file_path)  # Remove the downloaded file
-                os.remove(decrypted_file_path)  # Remove the decrypted file
-                vana.logging.info(f"Encrypted and decrypted data removed from the node")
-
-        return message
 
     async def forward(self):
         """
@@ -178,7 +113,7 @@ class Validator(BaseNode):
                 f"Received file_id: {file_id}, input_url: {input_url}, input_encryption_key: {input_encryption_key}, added_time: {added_time}, assigned_validator: {assigned_validator}")
 
             # TODO: Define how the validator selects a which other validators to query, how often, etc.
-            node_servers = self.chain_manager.get_active_node_servers(omit=[self.node_server.info()])
+            node_servers = self.chain_manager.get_active_node_servers()
             responses = await self.node_client.forward(
                 node_servers=node_servers,
                 message=chatgpt.protocol.ValidationMessage(
