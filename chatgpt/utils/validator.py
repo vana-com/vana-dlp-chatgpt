@@ -126,7 +126,7 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
     scores = []
 
     encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    system_message = "You are an AI language model that evaluates the coherence and relevance of a conversation."
+    system_message = "You are an AI language model that evaluates the coherence and relevance of a conversation. Please evaluate the following conversation and provide a score from 1 to 100 indicating the degree of consistency and appropriateness of the responses within the given context. Your entire response/output should consist of a single JSON object with a score key-value, and you should NOT wrap it within JSON markdown markers."
     system_message_tokens = encoding.encode(system_message)
 
     for conversation in sample:
@@ -146,7 +146,6 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
         chunk_scores = []
         for chunk in context_chunks:
             chunk_text = encoding.decode(chunk)
-            content = 'Please evaluate the following conversation and provide a score from 1 to 100 indicating the degree of consistency and appropriateness of the responses within the given context. Your entire response/output should consist of a single JSON object with a score key-value {"score":...}, and you should NOT wrap it within JSON markdown markers:\n\n' + chunk_text
             max_retries = 3
             retry_count = 0
             while retry_count < max_retries:
@@ -154,7 +153,7 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": system_message},
-                        {"role": "user", "content": content}
+                        {"role": "user", "content": f"# Conversation to evaluate:\n\n{chunk_text}"}
                     ],
                 )
 
