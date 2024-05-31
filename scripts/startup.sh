@@ -50,7 +50,7 @@ docker run -d --name validator \
   -e OD_NODESERVER_EXTERNAL_PORT=5555 \
   -e OD_NODESERVER_PORT=5555 \
   -p 5555:5555 \
-  -v /root/.opendata:/root/.opendata \
+  -v /root/.vana:/root/.vana \
   --log-driver=gcplogs \
   --log-opt gcp-project="$PROJECT" \
   "$IMAGE"
