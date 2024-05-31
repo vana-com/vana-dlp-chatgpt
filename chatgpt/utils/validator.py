@@ -146,7 +146,7 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
         chunk_scores = []
         for chunk in context_chunks:
             chunk_text = encoding.decode(chunk)
-            content = "Please evaluate the following conversation and provide a score from 1 to 100 indicating the degree of consistency and appropriateness of the responses within the given context. Your entire response/output should consist of a single JSON object {}, and you should NOT wrap it within JSON markdown markers:\n\n" + chunk_text
+            content = 'Please evaluate the following conversation and provide a score from 1 to 100 indicating the degree of consistency and appropriateness of the responses within the given context. Your entire response/output should consist of a single JSON object with a score key-value {"score":...}, and you should NOT wrap it within JSON markdown markers:\n\n' + chunk_text
             max_retries = 3
             retry_count = 0
             while retry_count < max_retries:
@@ -159,6 +159,8 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
                 )
 
                 score_json = response.choices[0].message.content
+                opendata.logging.info(f"LLM validation response: {score_json}")
+
                 try:
                     score_data = json.loads(score_json)
                     score = int(score_data["score"])
