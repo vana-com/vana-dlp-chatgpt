@@ -17,16 +17,10 @@
 
 import argparse
 import asyncio
-import base64
-import os
-import tempfile
 import threading
 import time
 import traceback
 from traceback import print_exception
-
-import gnupg
-import requests
 import vana
 
 import chatgpt.protocol
