@@ -1,19 +1,25 @@
 # Running the ChatGPT DLP on Testnet
 
-This tutorial shows how to use the Vana Satori Testnet to get started with the ChatGPT Data Liquidity Pool.
+This tutorial shows how to use the Vana Satori Testnet to get started with the ChatGPT Data Liquidity Pool. You will: 
+- Deploy a data liquidity pool smart contract to create your own data DAO
+- Register validators to run proof of contribution, ensuring chatGPT data quality
+- Submit chatGPT data to test that proof of contribution is working
+
+Note that you will not be rewarded in GPTDAT - this testnet tutorial just writes scores onchain, but does not yet support claiming GPTDAT. 
+
+### Testnet disclaimers
 
 Incentive mechanisms running on the testnet are open to anyone, and although these mechanisms on testnet do not emit
-real DAT, they cost you test DAT which you must create.
+real DAT, they cost you test DAT which you must get from a faucet. Testnet tokens, including testnet DAT and dataset-specific tokens like testnet GPTDAT, have no value. 
 
 ### Words of Wisdom
 
-- Do not expose your private keys.
-- Only use your testnet wallet.
-- Do not reuse the password of your mainnet wallet.
+- Do not expose your private keys or mnemonic phrase.
+- Do not reuse the password of your mainnet wallet. 
 
 ## Prerequisites
 
-Before proceeding further, make sure that you have installed the project dependencies:
+Make sure to install the project dependencies:
 
 ```bash
 poetry install
@@ -79,7 +85,7 @@ You're now ready to deploy a DLP smart contract, creating your own data DAO. You
 yarn install
 ```
 
-4. Create an `.env` file. You will need the owner address and private key. 
+4. Create an `.env` file for the smart contract repo. You will need the owner address and private key. 
 
 ```bash
 cat ~/.vana/wallets/owner/hotkeys/default
