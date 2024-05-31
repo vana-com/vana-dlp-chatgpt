@@ -32,6 +32,8 @@ vanacli wallet create
 > wallet name: owner
 > hotkey name: default
 > password: <password>
+# It may take a moment to generate the wallet
+# Save your mnemonic phrase
 
 # Create a wallet for a validator running on port 4000
 vanacli wallet create
