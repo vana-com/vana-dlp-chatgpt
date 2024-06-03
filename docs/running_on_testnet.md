@@ -33,6 +33,8 @@ cd vana-dlp-chatgpt
 poetry install
 ```
 
+Configure the environment variables by copying and modifying the `.env.example` file, to a `.env` file in the root of the project. 
+
 ## Setup vanacli
 Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to use the `vanacli` to generate keys
 
@@ -42,6 +44,8 @@ cd vana-framework
 poetry install
 python setup_vanacli.py
 > vanacli command set up successfully!
+
+# Restart CLI to use `vanacli` command
 ```
 
 ## Create a Wallet

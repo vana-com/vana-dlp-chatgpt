@@ -38,15 +38,56 @@ poetry install
 poetry run python -m chatgpt.nodes.validator
 ```
 
+## Using the CLI
+The Vana command line interface (`vanacli`) is the primary command line tool for interacting with the Vana network.
+It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.
+
+### Setup vanacli
+Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to use the `vanacli` to generate keys
+
+```bash
+git clone git@github.com:vana-com/vana-framework.git
+cd vana-framework
+poetry install
+python setup_vanacli.py
+> vanacli command set up successfully!
+
+# Restart CLI to use `vanacli` command
+```
+
+### Basic Usage
+
+To get the list of all the available commands and their descriptions, you can use:
+
+```bash
+vanacli <command> <command args>
+
+vana cli v0.0.1
+
+positional arguments:
+  {root,r,roots,wallet,w,wallets,stake,st,stakes,sudo,su,sudos,info,i}
+    root (r, roots)     Commands for managing and viewing the root network.
+    wallet (w, wallets)
+                        Commands for managing and viewing wallets.
+    stake (st, stakes)  Commands for staking and removing stake from hotkey accounts.
+    sudo (su, sudos)    Commands for DLP management
+    info (i)            Instructions for enabling autocompletion for the CLI.
+
+options:
+  -h, --help            show this help message and exit
+  --print-completion {bash,zsh,tcsh}
+                         Print shell tab completion script
+```
+
 # Wallets
 
-Wallets are the core ownership and identity technology around which all functions on Vana are carried out. 
-Vana wallets consists of a coldkey and hotkey where the coldkey may contain many hotkeys, while each hotkey can only belong to a single coldkey. 
+Wallets are the core ownership and identity technology around which all functions on Vana are carried out.
+Vana wallets consists of a coldkey and hotkey where the coldkey may contain many hotkeys, while each hotkey can only belong to a single coldkey.
 Coldkeys store funds securely, and operate functions such as transfers and staking, while hotkeys are used for all online operations such as signing queries, running miners and validating.
 
 
 ```bash
-$ poetry run python -m vana.cli --no_version_checking wallet --help
+$ vanacli wallet --help
 
 usage: vanacli <command> <command args> wallet [-h] {balance,create,new_hotkey,new_coldkey,regen_coldkey,regen_coldkeypub,regen_hotkey,update,history} ...
 
@@ -78,42 +119,13 @@ $ tree ~/.vana/
                 hotkeys/        # The folder containing all of your hotkeys.
                     default     # You unencrypted hotkey information.
 ```
-Your default wallet ```Wallet (default, default, ~/.vana/wallets/)``` is always used unless you specify otherwise. 
-Be sure to store your mnemonics safely. 
+Your default wallet ```Wallet (default, default, ~/.vana/wallets/)``` is always used unless you specify otherwise.
+Be sure to store your mnemonics safely.
 If you lose your password to your wallet, or the access to the machine where the wallet is stored, you can always regenerate the coldkey using the mnemonic you saved from above.
 ```bash
-$ poetry run python -m vana.cli --no_version_checking wallet regen_coldkey --mnemonic **** *** **** **** ***** **** *** **** **** **** ***** *****
+$ vanacli wallet regen_coldkey --mnemonic **** *** **** **** ***** **** *** **** **** **** ***** *****
 ```
 
-## Using the cli
-The Vana command line interface (`vana.cli`) is the primary command line tool for interacting with the Vana network.
-It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.
-
-### Basic Usage
-
-To get the list of all the available commands and their descriptions, you can use:
-
-```bash
-poetry run python -m vana.cli --help
-
-usage: vanacli <command> <command args>
-
-vana cli v0.0.1
-
-positional arguments:
-  {root,r,roots,wallet,w,wallets,stake,st,stakes,sudo,su,sudos,info,i}
-    root (r, roots)     Commands for managing and viewing the root network.
-    wallet (w, wallets)
-                        Commands for managing and viewing wallets.
-    stake (st, stakes)  Commands for staking and removing stake from hotkey accounts.
-    sudo (su, sudos)    Commands for DLP management
-    info (i)            Instructions for enabling autocompletion for the CLI.
-
-options:
-  -h, --help            show this help message and exit
-  --print-completion {bash,zsh,tcsh}
-                         Print shell tab completion script
-```
 ## License
 The MIT License (MIT)
 
