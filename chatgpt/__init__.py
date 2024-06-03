@@ -15,12 +15,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-import os
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# TODO: separate vana testnet and mainnet addresses
-__dlp_vana_contract__ = os.environ.get("DLP_CONTRACT_ADDRESS", "0x4e950420bdC60355Bbd34216DA5F6F77E73E9F8F")
-__dlp_base_sepolia_contract__ = "0x575dBF6B355B32B7ef94570572965EABA210CcBB"
+__dlp_vana_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
+__dlp_moksha_contract__ = "0x4e950420bdC60355Bbd34216DA5F6F77E73E9F8F"
+__dlp_satori_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
