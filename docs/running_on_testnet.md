@@ -79,18 +79,24 @@ vanacli wallet create
 
 ## Fund Wallets
 
+First, fund your metamask or other evm-compatible wallet from the faucet so you have some funds to work with. 
+
+Add the Satori Testnet to your metamask wallet: 
+```bash
+Network name: Satori Testnet
+RPC URL: http://rpc.satori.vana.com
+Chain ID: 14801
+Currency: DAT
+```
+Note you can only use the faucet once per day. Use the testnet faucet available at https://faucet.vana.com to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
+
 Get your wallet address for all three accounts
 ```bash
-> jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
-> jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
-> jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
+jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
+jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
+jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
 ```
-
-Use the testnet faucet available at https://faucet.vana.com to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
-
-For convenience, you may want to get testnet DAT sent over to your metamask wallet, then send DAT from your metamask wallet to these three wallets. 
-
-You are funding the hotkey wallets for use on the network.
+Now, send DAT from your metamask wallet to these three wallets. You are funding the hotkey wallets for use on the network.
 
 ## Deploy your own DLP smart contracts on Testnet
 
