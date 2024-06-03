@@ -16,6 +16,7 @@ web3 = "^6.18.0"
 tiktoken = "^0.7.0"
 vana = "^0.2.0"
 pynacl = "^1.5.0"
+scikit-learn = "^1.5.0"
 
 
 [build-system]

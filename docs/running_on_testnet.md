@@ -31,6 +31,17 @@ Make sure to install the project dependencies:
 poetry install
 ```
 
+## Setup vanacli
+Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to access the `vanacli`
+
+```bash
+git clone https://github.com/vana-com/vana-framework.git
+cd vana-framework
+poetry install
+python setup_vanacli.py
+> vanacli command set up successfully!
+```
+
 ## Create a Wallet
 
 Now we need to create wallets for the DLP owner and validators running on the DLP. Let's create two wallets for running 2 validators on two
@@ -84,7 +95,7 @@ You are funding the hotkey wallets for use on the network.
 You're now ready to deploy a DLP smart contract, creating your own data DAO. You will then register two validators through the smart contract. The validators will be running proof of contribution. 
 
 1. Install hardhat: https://hardhat.org/hardhat-runner/docs/getting-started#installation
-2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/dlp-smart-contracts/
+2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts
 3. Install dependencies
 
 ```bash
@@ -100,7 +111,7 @@ Copy the address and private key over to the .env file:
 ```.env
 DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
-VANA_TESTNET_URL=http://34.172.243.254:8545
+VANA_TESTNET_URL=http://rpc.satori.vana.com
 ```
 5. Deploy smart contract
 
