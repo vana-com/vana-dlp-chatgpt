@@ -108,7 +108,7 @@ class BaseNode(ABC):
                 # self.check_registered()
 
                 vana.logging.info(
-                    f"Running node on data liquidity pool: {self.config.dlpuid} with hotkey {self.wallet.hotkey.address} using network: {self.chain_manager.config.chain_endpoint}")
+                    f"Running node on data liquidity pool: {self.config.dlpuid} with hotkey {self.wallet.hotkey.address} using network: {self.chain_manager.config.chain.chain_endpoint}")
         except vana.KeyFileError as e:
             vana.logging.error(f"Keyfile error: {e}")
             vana.logging.warning(
@@ -176,7 +176,8 @@ class BaseNode(ABC):
             vana.logging.error(
                 f"Wallet: {self.wallet} is not registered on DLP {self.config.dlpuid}."
             )
-            exit()
+            # Do not exit, registration status can change
+            # exit()
 
     def should_sync_state(self):
         """
@@ -194,12 +195,17 @@ class BaseNode(ABC):
         Returns:
             str: The contract address for the specified network.
         """
+        if os.environ.get("DLP_CONTRACT_ADDRESS"):
+            return os.environ.get("DLP_CONTRACT_ADDRESS")
+
         if network is None:
             return None
 
         if network == "vana":
             return chatgpt.__dlp_vana_contract__
-        elif network == "base_sepolia":
-            return chatgpt.__dlp_base_sepolia_contract__
+        elif network == "satori":
+            return chatgpt.__dlp_satori_contract__
+        elif network == "moksha":
+            return chatgpt.__dlp_moksha_contract__
         else:
             return "unknown"
