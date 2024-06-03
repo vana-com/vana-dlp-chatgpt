@@ -46,7 +46,7 @@ Coldkeys store funds securely, and operate functions such as transfers and staki
 
 
 ```bash
-$ poetry run python -m opendata.cli --no_version_checking wallet --help
+$ poetry run python -m vana.cli --no_version_checking wallet --help
 
 usage: vanacli <command> <command args> wallet [-h] {balance,create,new_hotkey,new_coldkey,regen_coldkey,regen_coldkeypub,regen_hotkey,update,history} ...
 
@@ -69,8 +69,8 @@ options:
 
 You should be able to view your keys by navigating to ~/.opendata/wallets or viewed by running ```vanacli wallet list```
 ```bash
-$ tree ~/.opendata/
-    .opendata/                  # Root directory.
+$ tree ~/.vana/
+    .vana/                      # Root directory.
         wallets/                # The folder containing all opendata wallets.
             default/            # The name of your wallet, "default"
                 coldkey         # You encrypted coldkey.
@@ -78,15 +78,15 @@ $ tree ~/.opendata/
                 hotkeys/        # The folder containing all of your hotkeys.
                     default     # You unencrypted hotkey information.
 ```
-Your default wallet ```Wallet (default, default, ~/.opendata/wallets/)``` is always used unless you specify otherwise. 
+Your default wallet ```Wallet (default, default, ~/.vana/wallets/)``` is always used unless you specify otherwise. 
 Be sure to store your mnemonics safely. 
 If you lose your password to your wallet, or the access to the machine where the wallet is stored, you can always regenerate the coldkey using the mnemonic you saved from above.
 ```bash
-$ poetry run python -m opendata.cli --no_version_checking wallet regen_coldkey --mnemonic **** *** **** **** ***** **** *** **** **** **** ***** *****
+$ poetry run python -m vana.cli --no_version_checking wallet regen_coldkey --mnemonic **** *** **** **** ***** **** *** **** **** **** ***** *****
 ```
 
 ## Using the cli
-The Opendata command line interface (`opendata.cli`) is the primary command line tool for interacting with the Vana network.
+The Opendata command line interface (`vana.cli`) is the primary command line tool for interacting with the Vana network.
 It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.
 
 ### Basic Usage
