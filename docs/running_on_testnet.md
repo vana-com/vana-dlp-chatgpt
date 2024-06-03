@@ -1,7 +1,7 @@
 # Running the ChatGPT DLP on Testnet
 
-This tutorial shows how to use the Vana Satori Testnet to get started with the ChatGPT Data Liquidity Pool. You will: 
-- Deploy a data liquidity pool smart contract to create your own data DAO
+This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It will take about 1 hour to get setup. You will: 
+- Deploy a data liquidity pool smart contract
 - Register validators to run proof of contribution, ensuring chatGPT data quality
 - Submit chatGPT data to test that proof of contribution is working
 
@@ -23,19 +23,21 @@ real DAT, they cost you test DAT which you must get from a faucet. Testnet token
 - Do not expose your private keys or mnemonic phrase.
 - Do not reuse the password of your mainnet wallet. 
 
-## Prerequisites
+## Get started
 
 Make sure to install the project dependencies:
 
 ```bash
+git clone git@github.com:vana-com/vana-dlp-chatgpt.git
+cd vana-dlp-chatgpt
 poetry install
 ```
 
 ## Setup vanacli
-Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to access the `vanacli`
+Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to use the `vanacli` to generate keys
 
 ```bash
-git clone https://github.com/vana-com/vana-framework.git
+git clone git@github.com:vana-com/vana-framework.git
 cd vana-framework
 poetry install
 python setup_vanacli.py
