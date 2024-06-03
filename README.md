@@ -67,11 +67,11 @@ options:
   -h, --help            show this help message and exit
 ```
 
-You should be able to view your keys by navigating to ~/.opendata/wallets or viewed by running ```vanacli wallet list```
+You should be able to view your keys by navigating to ~/.vana/wallets or viewed by running ```vanacli wallet list```
 ```bash
 $ tree ~/.vana/
     .vana/                      # Root directory.
-        wallets/                # The folder containing all opendata wallets.
+        wallets/                # The folder containing all vana wallets.
             default/            # The name of your wallet, "default"
                 coldkey         # You encrypted coldkey.
                 coldkeypub.txt  # Your coldkey public address
@@ -86,7 +86,7 @@ $ poetry run python -m vana.cli --no_version_checking wallet regen_coldkey --mne
 ```
 
 ## Using the cli
-The Opendata command line interface (`vana.cli`) is the primary command line tool for interacting with the Vana network.
+The Vana command line interface (`vana.cli`) is the primary command line tool for interacting with the Vana network.
 It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.
 
 ### Basic Usage
@@ -94,7 +94,7 @@ It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfe
 To get the list of all the available commands and their descriptions, you can use:
 
 ```bash
-poetry run python -m opendata.cli --help
+poetry run python -m vana.cli --help
 
 usage: vanacli <command> <command args>
 
