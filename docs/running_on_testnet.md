@@ -90,9 +90,9 @@ Note you can only use the faucet once per day. Use the testnet faucet available 
 
 Get your wallet address for all three accounts
 ```bash
-> jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
-> jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
-> jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
+jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
+jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
+jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
 ```
 Now, send DAT from your metamask wallet to these three wallets. You are funding the hotkey wallets for use on the network.
 
