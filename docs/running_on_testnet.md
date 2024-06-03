@@ -31,6 +31,17 @@ Make sure to install the project dependencies:
 poetry install
 ```
 
+## Setup vanacli
+Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to access the `vanacli`
+
+```bash
+git clone https://github.com/vana-com/vana-framework.git
+cd vana-framework
+poetry install
+python setup_vanacli.py
+> vanacli command set up successfully!
+```
+
 ## Create a Wallet
 
 Now we need to create wallets for the DLP owner and validators running on the DLP. Let's create two wallets for running 2 validators on two
