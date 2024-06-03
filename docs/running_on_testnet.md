@@ -111,15 +111,17 @@ Copy the address and private key over to the .env file:
 ```.env
 DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
-VANA_TESTNET_URL=http://rpc.satori.vana.com
+SATORI_RPC_URL=http://rpc.satori.vana.com
 ```
 5. Deploy smart contract
 
 ```bash
-npx hardhat deploy --network vanaTestnet --tags DLPDeploy
+npx hardhat deploy --network satori --tags DLPDeploy
 ```
 
-6. Congratulations, you've deployed the DLP smart contract. You can confirm it's up by searching the address on the block explorer: https://satori.vanascan.io/ . Copy the deployed smart contract address. 
+6. Congratulations, you've deployed the DLP smart contract. You can confirm it's up by searching the address on the block explorer: https://satori.vanascan.io/address/<contract_address> . Copy the deployed smart contract address. 
+
+7. In vana-dlp-chatgpt/.env, add an environment variable DLP_CONTRACT_ADDRESS=0x... (replace with the deployed contract address).
 
 ## Register Validators
 
@@ -131,7 +133,7 @@ poetry run python -m chatgpt.nodes.validator --wallet.name=validator_4000 --dlp.
 poetry run python -m chatgpt.nodes.validator --wallet.name=validator_4001 --dlp.register 0.001
 ```
 
-Afterwards, the transaction must be accepted by calling the acceptValidator function in the deployed smart contract, which can be done like so:
+Afterward, the transaction must be accepted by calling the acceptValidator function in the deployed smart contract, which can be done like so:
 
 - Visit: https://satori.vanascan.io/address/<deployed_contract_address>?tab=write_contract
 - Connect owner wallet created earlier
