@@ -20,9 +20,7 @@ import os
 import random
 import zipfile
 from typing import List, Dict, Any, Iterable
-
 from openai import OpenAI
-
 from chatgpt.models.chatgpt import ChatGPTData
 import vana as opendata
 import tiktoken
@@ -58,10 +56,13 @@ def validate_chatgpt_zip(zip_file_path):
     # Analyze the structure and content of conversations.json
     metadata = analyze_data(parsed_data)
 
-    # Perform random sampling and LLM validation
-    sample_size = 10
-    threshold_score = 80
-    validation_response = validate_sample(parsed_data, sample_size, threshold_score)
+    # Perform validation and scoring
+    if "OPENAI_API_KEY" in os.environ:
+        opendata.logging.info("OPENAI_API_KEY is set. Performing LLM validation.")
+        validation_response = validate_sample(parsed_data)
+    else:
+        opendata.logging.info("OPENAI_API_KEY not set. Skipping optional LLM validation.")
+        validation_response = calculate_score_from_metadata(metadata)
 
     return {
         'is_valid': validation_response["is_valid"],
@@ -112,7 +113,7 @@ def analyze_data(data: List[ChatGPTData]) -> Dict[str, Any]:
     }
 
 
-def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: int) -> bool | dict[str, float | bool]:
+def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
     """
     Validate a sample of ChatGPT data using a language model evaluation.
     :param data:
@@ -121,6 +122,7 @@ def validate_sample(data: List[ChatGPTData], sample_size: int, threshold_score: 
     :return:
     """
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    sample_size = int(os.environ.get("SAMPLE_SIZE", 10))
 
     sample = random.sample(data, sample_size)
     scores = []
@@ -241,3 +243,29 @@ def as_wad(num: float = 0) -> int:
 
 def from_wad(num: int = 0) -> float:
     return num / 1e18
+
+
+def calculate_score_from_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Calculate a score based on metadata and thresholds.
+    :param metadata: Dictionary containing metadata analysis
+    :return: Tuple containing the score and a boolean indicating if the data is valid
+    """
+    # Values for the minimum thresholds and score calculation that can be adjusted via environment variables
+    min_conversations = int(os.environ.get("MIN_CONVERSATIONS", 10))
+    min_avg_messages = int(os.environ.get("MIN_AVG_MESSAGES", 3))
+    min_avg_message_length = int(os.environ.get("MIN_AVG_MESSAGE_LENGTH", 50))
+    threshold_score = int(os.environ.get("THRESHOLD_SCORE", 80))
+
+    score = 0
+    if metadata["num_conversations"] >= min_conversations:
+        score += 30
+    if metadata["avg_messages_per_conversation"] >= min_avg_messages:
+        score += 30
+    if metadata["avg_message_length"] >= min_avg_message_length:
+        score += 40
+
+    return {
+        'is_valid': score >= threshold_score,
+        'score': score
+    }
