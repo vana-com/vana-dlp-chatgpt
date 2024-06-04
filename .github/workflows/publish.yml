@@ -42,7 +42,7 @@ jobs:
             TAGS="$TAGS,${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest"
           fi
           if [[ "${{ github.event.inputs.stable_release }}" == "true" ]]; then
-            TAGS="$TAGS,${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:stable"
+            TAGS="$TAGS,${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:stable"
           fi
           echo "::set-output name=tags::$TAGS"
 
