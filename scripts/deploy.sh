@@ -2,6 +2,9 @@
 
 # TODO: move this process to an external Vana-only location
 
+# Typically you will want to run it like this: ./scripts/deploy.sh -d prd_satori -t satori or ./scripts/deploy.sh -d prd_satori.
+# This will create NUM_NODES VM instances in the specified PROJECT with IMAGE:satori or IMAGE:latest using the prd_satori Doppler project.
+
 source "$(dirname "$0")/env.sh"
 
 DEFAULT_NAMESPACE=default
