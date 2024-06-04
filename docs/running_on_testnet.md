@@ -135,6 +135,12 @@ npx hardhat deploy --network satori --tags DLPDeploy
 
 7. In vana-dlp-chatgpt/.env, add an environment variable DLP_CONTRACT_ADDRESS=0x... (replace with the deployed contract address).
 
+8. Verify the contract, so we can interact with it directly in the block explorer:
+
+```bash
+npx hardhat verify --network satori <contract_address>
+```
+
 ## Register Validators
 
 Before validators can begin participating in the DLP, they must be registered. Run the following command to register the
