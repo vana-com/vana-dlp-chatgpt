@@ -43,5 +43,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: Dockerfile.validator
           push: true
           tags: ${{ steps.tags.outputs.tags }}

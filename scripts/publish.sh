@@ -2,6 +2,9 @@
 
 # TODO: move this process to an external Vana-only location
 
+# Typically you will want to run it like this: ./scripts/publish.sh -t satori or ./scripts/publish.sh
+# This will build and push IMAGE:satori or IMAGE:latest to the Docker Hub registry.
+
 source "$(dirname "$0")/env.sh"
 
 IMAGE=${IMAGE:-validator}
