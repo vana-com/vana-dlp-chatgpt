@@ -16,6 +16,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import json
+import math
 import os
 import random
 import zipfile
@@ -24,6 +25,7 @@ from openai import OpenAI
 from chatgpt.models.chatgpt import ChatGPTData
 import vana as opendata
 import tiktoken
+from chatgpt.utils.config import get_validation_config
 
 
 def validate_chatgpt_zip(zip_file_path):
@@ -190,7 +192,7 @@ def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
 
     return {
         'is_valid': avg_score >= threshold_score,
-        'score': avg_score / 100
+        'score': avg_score
     }
 
 
@@ -264,22 +266,32 @@ def calculate_score_from_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
     """
     Calculate a score based on metadata and thresholds.
     :param metadata: Dictionary containing metadata analysis
-    :return: Tuple containing the score and a boolean indicating if the data is valid
+    :return: Dictionary containing the score and a boolean indicating if the data is valid
     """
-    # Values for the minimum thresholds and score calculation that can be adjusted via environment variables
-    min_conversations = int(os.environ.get("MIN_CONVERSATIONS", 10))
-    min_avg_messages = int(os.environ.get("MIN_AVG_MESSAGES", 3))
-    min_avg_message_length = int(os.environ.get("MIN_AVG_MESSAGE_LENGTH", 50))
-    threshold_score = int(os.environ.get("THRESHOLD_SCORE", 80))
+    # Get the validation thresholds
+    validation_config = get_validation_config()
 
+    # Extract the validation thresholds from the configuration
+    min_conversations = validation_config["MIN_CONVERSATIONS"]
+    min_avg_messages = validation_config["MIN_AVG_MESSAGES"]
+    min_avg_message_length = validation_config["MIN_AVG_MESSAGE_LENGTH"]
+    threshold_score = validation_config["THRESHOLD_SCORE"]
+
+    # Initialize the score
     score = 0
-    if metadata["num_conversations"] >= min_conversations:
-        score += 30
-    if metadata["avg_messages_per_conversation"] >= min_avg_messages:
-        score += 30
-    if metadata["avg_message_length"] >= min_avg_message_length:
-        score += 40
 
+    # Calculate the score proportionally based on the metadata and thresholds
+    if min_conversations > 0:
+        score += min(metadata["num_conversations"] / min_conversations, 1) * 30
+    if min_avg_messages > 0:
+        score += min(metadata["avg_messages_per_conversation"] / min_avg_messages, 1) * 30
+    if min_avg_message_length > 0:
+        score += min(metadata["avg_message_length"] / min_avg_message_length, 1) * 40
+
+    # Round the score up to the nearest integer and ensure it is between 0 and 100
+    score = max(0, min(math.ceil(score), 100))
+
+    # Return a dictionary with the score and validity status
     return {
         'is_valid': score >= threshold_score,
         'score': score
