@@ -116,14 +116,15 @@ def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
     """
     Validate a sample of ChatGPT data using a language model evaluation.
     :param data:
-    :param sample_size:
-    :param threshold_score:
     :return:
     """
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    sample_size = int(os.environ.get("SAMPLE_SIZE", 10))
-    threshold_score = int(os.environ.get("THRESHOLD_SCORE", 80))
-    max_validation_chunk_size = int(os.environ.get("MAX_VALIDATION_CHUNK_SIZE", 16285))
+
+    validation_config = get_validation_config()
+
+    sample_size = validation_config["SAMPLE_SIZE"]
+    threshold_score = validation_config["THRESHOLD_SCORE"]
+    max_validation_chunk_size = validation_config["MAX_VALIDATION_CHUNK_SIZE"]
 
     sample = random.sample(data, sample_size)
     scores = []
