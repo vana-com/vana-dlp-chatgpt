@@ -16,6 +16,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import argparse
+import os
 from munch import Munch, munchify
 import vana
 
@@ -26,16 +27,33 @@ validation_config: Munch = munchify(
             "MIN_CONVERSATIONS": 5,
             "MIN_AVG_MESSAGES": 2,
             "MIN_AVG_MESSAGE_LENGTH": 30,
-            "THRESHOLD_SCORE": 60
+            "THRESHOLD_SCORE": 60,
+            "SAMPLE_SIZE": 10,
+            "MAX_VALIDATION_CHUNK_SIZE": 4000,
         },
         "mainnet": {
             "MIN_CONVERSATIONS": 10,
             "MIN_AVG_MESSAGES": 3,
             "MIN_AVG_MESSAGE_LENGTH": 50,
-            "THRESHOLD_SCORE": 80
+            "THRESHOLD_SCORE": 80,
+            "SAMPLE_SIZE": 30,
+            "MAX_VALIDATION_CHUNK_SIZE": 16285,
         }
     }
 )
+
+
+def get_validation_config(network: str = None):
+    """
+    Returns the validation config for the given network.
+    If network is None, returns the config for the network specified in the environment variable OD_CHAIN_NETWORK, defaulting to "satori".
+    :param network: The network to get the validation config for
+    :return: The validation config for the given network
+    """
+    if not network:
+        network = os.environ.get("OD_CHAIN_NETWORK", "satori")
+
+    return validation_config[network]
 
 
 def check_config(cls, config: vana.Config):
