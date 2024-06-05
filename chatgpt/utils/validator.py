@@ -16,6 +16,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 import json
+import math
 import os
 import random
 import zipfile
@@ -24,9 +25,7 @@ from openai import OpenAI
 from chatgpt.models.chatgpt import ChatGPTData
 import vana as opendata
 import tiktoken
-
-# Max token size for LLM validation
-MAX_VALIDATION_CHUNK_SIZE = 16285
+from chatgpt.utils.config import get_validation_config
 
 
 def validate_chatgpt_zip(zip_file_path):
@@ -66,7 +65,7 @@ def validate_chatgpt_zip(zip_file_path):
 
     return {
         'is_valid': validation_response["is_valid"],
-        'score': validation_response["score"],
+        'score': validation_response["score"] / 100,
         'metadata': metadata,
     }
 
@@ -117,18 +116,25 @@ def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
     """
     Validate a sample of ChatGPT data using a language model evaluation.
     :param data:
-    :param sample_size:
-    :param threshold_score:
     :return:
     """
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    sample_size = int(os.environ.get("SAMPLE_SIZE", 10))
+
+    validation_config = get_validation_config()
+
+    sample_size = validation_config["SAMPLE_SIZE"]
+    threshold_score = validation_config["THRESHOLD_SCORE"]
+    max_validation_chunk_size = validation_config["MAX_VALIDATION_CHUNK_SIZE"]
 
     sample = random.sample(data, sample_size)
     scores = []
 
     encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    system_message = "You are an AI language model that evaluates the coherence and relevance of a conversation. Please evaluate the following conversation and provide a score from 1 to 100 indicating the degree of consistency and appropriateness of the responses within the given context. Your entire response/output should consist of a single JSON object with a score key-value, and you should NOT wrap it within JSON markdown markers."
+    system_message = ("You are an AI language model that evaluates the coherence and relevance of a conversation. "
+                      "Please evaluate the following conversation and provide a score from 1 to 100 indicating the "
+                      "degree of consistency and appropriateness of the responses within the given context. Your "
+                      "entire response/output should consist of a single JSON object with a score key-value, "
+                      "and you should NOT wrap it within JSON markdown markers.")
     system_message_tokens = encoding.encode(system_message)
 
     for conversation in sample:
@@ -142,7 +148,9 @@ def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
 
         # Use tiktoken to calculate the actual token count of the context
         context_tokens = encoding.encode(' '.join(context))
-        max_chunk_size = MAX_VALIDATION_CHUNK_SIZE - len(system_message_tokens)  # Adjust chunk size based on system message tokens
+
+        # Adjust chunk size based on system message tokens
+        max_chunk_size = max_validation_chunk_size - len(system_message_tokens)
         context_chunks = [context_tokens[i:i+max_chunk_size] for i in range(0, len(context_tokens), max_chunk_size)]
 
         chunk_scores = []
@@ -185,7 +193,7 @@ def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
 
     return {
         'is_valid': avg_score >= threshold_score,
-        'score': avg_score / 100
+        'score': avg_score
     }
 
 
@@ -238,10 +246,20 @@ def load_chatgpt_data(data: dict) -> List[ChatGPTData]:
 
 
 def as_wad(num: float = 0) -> int:
+    """
+    Convert a number to its equivalent in wei.
+    :param num:
+    :return:
+    """
     return int(num * 1e18)
 
 
 def from_wad(num: int = 0) -> float:
+    """
+    Convert a number from wei to its equivalent.
+    :param num:
+    :return:
+    """
     return num / 1e18
 
 
@@ -249,22 +267,32 @@ def calculate_score_from_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
     """
     Calculate a score based on metadata and thresholds.
     :param metadata: Dictionary containing metadata analysis
-    :return: Tuple containing the score and a boolean indicating if the data is valid
+    :return: Dictionary containing the score and a boolean indicating if the data is valid
     """
-    # Values for the minimum thresholds and score calculation that can be adjusted via environment variables
-    min_conversations = int(os.environ.get("MIN_CONVERSATIONS", 10))
-    min_avg_messages = int(os.environ.get("MIN_AVG_MESSAGES", 3))
-    min_avg_message_length = int(os.environ.get("MIN_AVG_MESSAGE_LENGTH", 50))
-    threshold_score = int(os.environ.get("THRESHOLD_SCORE", 80))
+    # Get the validation thresholds
+    validation_config = get_validation_config()
 
+    # Extract the validation thresholds from the configuration
+    min_conversations = validation_config["MIN_CONVERSATIONS"]
+    min_avg_messages = validation_config["MIN_AVG_MESSAGES"]
+    min_avg_message_length = validation_config["MIN_AVG_MESSAGE_LENGTH"]
+    threshold_score = validation_config["THRESHOLD_SCORE"]
+
+    # Initialize the score
     score = 0
-    if metadata["num_conversations"] >= min_conversations:
-        score += 30
-    if metadata["avg_messages_per_conversation"] >= min_avg_messages:
-        score += 30
-    if metadata["avg_message_length"] >= min_avg_message_length:
-        score += 40
 
+    # Calculate the score proportionally based on the metadata and thresholds
+    if min_conversations > 0:
+        score += min(metadata["num_conversations"] / min_conversations, 1) * 30
+    if min_avg_messages > 0:
+        score += min(metadata["avg_messages_per_conversation"] / min_avg_messages, 1) * 30
+    if min_avg_message_length > 0:
+        score += min(metadata["avg_message_length"] / min_avg_message_length, 1) * 40
+
+    # Round the score up to the nearest integer and ensure it is between 0 and 100
+    score = max(0, min(math.ceil(score), 100))
+
+    # Return a dictionary with the score and validity status
     return {
         'is_valid': score >= threshold_score,
         'score': score
