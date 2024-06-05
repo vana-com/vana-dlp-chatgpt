@@ -16,8 +16,26 @@
 # DEALINGS IN THE SOFTWARE.
 
 import argparse
-
+from munch import Munch, munchify
 import vana
+
+# Validation thresholds for testnet and mainnet
+validation_config: Munch = munchify(
+    {
+        "testnet": {
+            "MIN_CONVERSATIONS": 5,
+            "MIN_AVG_MESSAGES": 2,
+            "MIN_AVG_MESSAGE_LENGTH": 30,
+            "THRESHOLD_SCORE": 60
+        },
+        "mainnet": {
+            "MIN_CONVERSATIONS": 10,
+            "MIN_AVG_MESSAGES": 3,
+            "MIN_AVG_MESSAGE_LENGTH": 50,
+            "THRESHOLD_SCORE": 80
+        }
+    }
+)
 
 
 def check_config(cls, config: vana.Config):
