@@ -20,10 +20,11 @@ import os
 from munch import Munch, munchify
 import vana
 
-# Validation thresholds for testnet and mainnet
+# Validation config for the DLP based on network
 validation_config: Munch = munchify(
     {
-        "testnet": {
+        # Testnet
+        "satori": {
             "MIN_CONVERSATIONS": 5,
             "MIN_AVG_MESSAGES": 2,
             "MIN_AVG_MESSAGE_LENGTH": 30,
@@ -31,6 +32,7 @@ validation_config: Munch = munchify(
             "SAMPLE_SIZE": 10,
             "MAX_VALIDATION_CHUNK_SIZE": 4000,
         },
+        # Mainnet
         "mainnet": {
             "MIN_CONVERSATIONS": 10,
             "MIN_AVG_MESSAGES": 3,
