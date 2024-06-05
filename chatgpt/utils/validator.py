@@ -65,7 +65,7 @@ def validate_chatgpt_zip(zip_file_path):
 
     return {
         'is_valid': validation_response["is_valid"],
-        'score': validation_response["score"],
+        'score': validation_response["score"] / 100,
         'metadata': metadata,
     }
 
