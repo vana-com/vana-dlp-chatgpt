@@ -25,9 +25,6 @@ from chatgpt.models.chatgpt import ChatGPTData
 import vana as opendata
 import tiktoken
 
-# Max token size for LLM validation
-MAX_VALIDATION_CHUNK_SIZE = 16285
-
 
 def validate_chatgpt_zip(zip_file_path):
     """
@@ -123,12 +120,18 @@ def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
     """
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     sample_size = int(os.environ.get("SAMPLE_SIZE", 10))
+    threshold_score = int(os.environ.get("THRESHOLD_SCORE", 80))
+    max_validation_chunk_size = int(os.environ.get("MAX_VALIDATION_CHUNK_SIZE", 16285))
 
     sample = random.sample(data, sample_size)
     scores = []
 
     encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    system_message = "You are an AI language model that evaluates the coherence and relevance of a conversation. Please evaluate the following conversation and provide a score from 1 to 100 indicating the degree of consistency and appropriateness of the responses within the given context. Your entire response/output should consist of a single JSON object with a score key-value, and you should NOT wrap it within JSON markdown markers."
+    system_message = ("You are an AI language model that evaluates the coherence and relevance of a conversation. "
+                      "Please evaluate the following conversation and provide a score from 1 to 100 indicating the "
+                      "degree of consistency and appropriateness of the responses within the given context. Your "
+                      "entire response/output should consist of a single JSON object with a score key-value, "
+                      "and you should NOT wrap it within JSON markdown markers.")
     system_message_tokens = encoding.encode(system_message)
 
     for conversation in sample:
@@ -142,7 +145,9 @@ def validate_sample(data: List[ChatGPTData]) -> bool | dict[str, float | bool]:
 
         # Use tiktoken to calculate the actual token count of the context
         context_tokens = encoding.encode(' '.join(context))
-        max_chunk_size = MAX_VALIDATION_CHUNK_SIZE - len(system_message_tokens)  # Adjust chunk size based on system message tokens
+
+        # Adjust chunk size based on system message tokens
+        max_chunk_size = max_validation_chunk_size - len(system_message_tokens)
         context_chunks = [context_tokens[i:i+max_chunk_size] for i in range(0, len(context_tokens), max_chunk_size)]
 
         chunk_scores = []
@@ -238,10 +243,20 @@ def load_chatgpt_data(data: dict) -> List[ChatGPTData]:
 
 
 def as_wad(num: float = 0) -> int:
+    """
+    Convert a number to its equivalent in wei.
+    :param num:
+    :return:
+    """
     return int(num * 1e18)
 
 
 def from_wad(num: int = 0) -> float:
+    """
+    Convert a number from wei to its equivalent.
+    :param num:
+    :return:
+    """
     return num / 1e18
 
 
