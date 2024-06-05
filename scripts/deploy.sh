@@ -12,7 +12,7 @@ DEFAULT_NAMESPACE=default
 PROJECT=${PROJECT:-corsali-production}
 NUM_NODES=${NUM_NODES:-3}
 MACHINE_TYPE=${MACHINE_TYPE:-n1-standard-1}
-IMAGE=${IMAGE:-timvana/dlp-chatgpt-validator}
+IMAGE=${IMAGE:-vanaorg/dlp-chatgpt-validator}
 ZONE=${ZONE:-us-central1-a}
 DOPPLER_PROJECT=${DOPPLER_PROJECT:-prd}
 TAG=${TAG:-latest}
@@ -57,19 +57,33 @@ fi
 
 echo "Using image: $IMAGE_TAG"
 
-# Loop through node creation
+# Loop through node creation or update
 for ((i=1; i<=NUM_NODES; i++)); do
   VM_NAME="${NAMESPACE}-chatgpt-validator-$i"
 
-  # Create the VM instance
-  gcloud compute instances create "$VM_NAME" \
-    --project="$PROJECT" \
-    --zone="$ZONE" \
-    --machine-type="$MACHINE_TYPE" \
-    --image-family="ubuntu-2004-lts" \
-    --image-project="ubuntu-os-cloud" \
-    --tags="allow-tcp-5555" \
-    --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/compute.readonly \
-    --metadata-from-file startup-script=scripts/startup.sh \
-    --metadata project="$PROJECT",image="$IMAGE_TAG",env_base64="$ENV_BASE64"
+  # Check if the instance exists
+  if gcloud compute instances describe "$VM_NAME" --project="$PROJECT" --zone="$ZONE" > /dev/null 2>&1; then
+    # Update metadata and startup script for the existing instance
+    gcloud compute instances add-metadata "$VM_NAME" \
+      --project="$PROJECT" \
+      --zone="$ZONE" \
+      --metadata project="$PROJECT",image="$IMAGE_TAG",env_base64="$ENV_BASE64" \
+      --metadata-from-file startup-script=scripts/startup.sh
+
+    echo "Updated VM instance $VM_NAME"
+  else
+    # Create the VM instance if it doesn't exist
+    gcloud compute instances create "$VM_NAME" \
+      --project="$PROJECT" \
+      --zone="$ZONE" \
+      --machine-type="$MACHINE_TYPE" \
+      --image-family="ubuntu-2004-lts" \
+      --image-project="ubuntu-os-cloud" \
+      --tags="allow-tcp-5555" \
+      --scopes=https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/compute.readonly \
+      --metadata project="$PROJECT",image="$IMAGE_TAG",env_base64="$ENV_BASE64" \
+      --metadata-from-file startup-script=scripts/startup.sh
+
+    echo "Created VM instance $VM_NAME"
+  fi
 done
