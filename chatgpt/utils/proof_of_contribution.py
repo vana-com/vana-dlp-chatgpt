@@ -18,12 +18,12 @@ async def proof_of_contribution(message: chatgpt.protocol.ValidationMessage) -> 
         message.output_is_valid = False
         message.output_file_score = 0
     else:
-        is_valid, file_score = validate_file(decrypted_file_path)
+        is_valid, file_score = proof_of_quality(decrypted_file_path)
         message.output_is_valid = is_valid
         message.output_file_score = file_score
 
-        check_ownership(decrypted_file_path)
-        check_similarity(decrypted_file_path)
+        proof_of_ownership(decrypted_file_path)
+        proof_of_uniqueness(decrypted_file_path)
 
         # Clean up
         os.remove(decrypted_file_path)  # Remove the decrypted file
@@ -79,7 +79,7 @@ def download_and_decrypt_file(input_url, input_encryption_key):
         return decrypted_file_path
 
 
-def validate_file(decrypted_file_path):
+def proof_of_quality(decrypted_file_path):
     """
     Validate the decrypted file.
     :param decrypted_file_path:
@@ -101,7 +101,7 @@ def validate_file(decrypted_file_path):
         return False, 0
 
 
-def check_ownership(decrypted_file_path):
+def proof_of_ownership(decrypted_file_path):
     """
     Check the ownership of the decrypted file.
     :param decrypted_file_path:
@@ -112,7 +112,7 @@ def check_ownership(decrypted_file_path):
     pass
 
 
-def check_similarity(decrypted_file_path):
+def proof_of_uniqueness(decrypted_file_path):
     """
     Check the similarity of the decrypted file with previously validated files.
     :param decrypted_file_path:

@@ -19,6 +19,9 @@ vana = "^0.2.1"
 pynacl = "^1.5.0"
 scikit-learn = "^1.5.0"
 munch = "^4.0.0"
+pytest = "^8.2.2"
+pytest-mock = "^3.14.0"
+pytest-asyncio = "^0.23.7"
 
 
 [build-system]
