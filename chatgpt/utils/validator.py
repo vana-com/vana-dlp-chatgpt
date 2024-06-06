@@ -78,10 +78,15 @@ def analyze_data(data: List[ChatGPTData]) -> Dict[str, Any]:
     :return: Dictionary containing metadata analysis
     """
     num_conversations = len(data)
-    total_messages = sum(
-        sum(1 for node in conv.mapping.values() if node.message)
-        for conv in data
-    )
+    total_messages = 0
+
+    for conv in data:
+        for node in conv.mapping.values():
+            if node.message and node.message.content.parts:
+                message_text = ' '.join(str(part) for part in node.message.content.parts)
+                if len(message_text) > 0:
+                    total_messages += 1
+
     avg_messages_per_conversation = round(total_messages / num_conversations, 2)
 
     def get_message_length(node):
@@ -99,17 +104,23 @@ def analyze_data(data: List[ChatGPTData]) -> Dict[str, Any]:
         get_message_length(node)
         for conv in data
         for node in conv.mapping.values()
-        if node.message
+        if node.message and node.message.content.parts
     )
-    avg_message_length = round(total_message_length / total_messages, 2)
+    avg_message_length = round(total_message_length / total_messages, 2) if total_messages > 0 else 0
 
     # Additional metadata analysis
     max_messages_per_conversation = max(
-        sum(1 for node in conv.mapping.values() if node.message)
+        sum(
+            1 for node in conv.mapping.values()
+            if node.message and node.message.content.parts
+        )
         for conv in data
     )
     min_messages_per_conversation = min(
-        sum(1 for node in conv.mapping.values() if node.message)
+        sum(
+            1 for node in conv.mapping.values()
+            if node.message and node.message.content.parts
+        )
         for conv in data
     )
     total_characters = total_message_length
