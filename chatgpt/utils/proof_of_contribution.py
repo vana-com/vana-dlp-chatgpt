@@ -6,7 +6,7 @@ import vana
 import gnupg
 import base64
 import chatgpt.protocol
-from chatgpt.utils.validator import validate_chatgpt_zip
+from chatgpt.utils.validator import evaluate_chatgpt_zip
 
 
 async def proof_of_contribution(message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
@@ -87,7 +87,7 @@ def proof_of_quality(decrypted_file_path):
     """
     try:
         # Validate the decrypted file
-        validation_result = validate_chatgpt_zip(decrypted_file_path)
+        validation_result = evaluate_chatgpt_zip(decrypted_file_path)
 
         vana.logging.info(f"Validation result: {validation_result}")
 
