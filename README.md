@@ -55,6 +55,13 @@ python setup_vanacli.py
 # Restart CLI to use `vanacli` command
 ```
 
+## Run Tests
+To run the tests, you can use the following command. This is especially useful for local development.
+
+```bash
+pytest
+```
+
 ### Basic Usage
 
 To get the list of all the available commands and their descriptions, you can use:

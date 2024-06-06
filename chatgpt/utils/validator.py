@@ -28,7 +28,7 @@ import tiktoken
 from chatgpt.utils.config import get_validation_config
 
 
-def validate_chatgpt_zip(zip_file_path):
+def evaluate_chatgpt_zip(zip_file_path):
     """
     Validate a ChatGPT data zip file.
     :param zip_file_path:  Path to the zip file containing ChatGPT data
