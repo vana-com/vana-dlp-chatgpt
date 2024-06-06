@@ -55,6 +55,10 @@ def get_validation_config(network: str = None):
     if not network:
         network = os.environ.get("OD_CHAIN_NETWORK", "satori")
 
+    # If the network is not in the validation config, default to the testnet config
+    if network not in validation_config:
+        network = "satori"
+
     return validation_config[network]
 
 
