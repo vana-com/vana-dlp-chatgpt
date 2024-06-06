@@ -56,12 +56,13 @@ def evaluate_chatgpt_zip(zip_file_path):
     metadata = analyze_data(parsed_data)
 
     # Perform validation and scoring
-    if "OPENAI_API_KEY" in os.environ:
+    # Check file metadata using the validation config thresholds
+    validation_response = calculate_score_from_metadata(metadata)
+
+    # If optional LLM check is enabled and the API key is set, perform LLM validation
+    if "OPENAI_API_KEY" in os.environ and validation_response["is_valid"]:
         opendata.logging.info("OPENAI_API_KEY is set. Performing LLM validation.")
         validation_response = validate_sample(parsed_data)
-    else:
-        opendata.logging.info("OPENAI_API_KEY not set. Skipping optional LLM validation.")
-        validation_response = calculate_score_from_metadata(metadata)
 
     return {
         'is_valid': validation_response["is_valid"],
@@ -77,7 +78,10 @@ def analyze_data(data: List[ChatGPTData]) -> Dict[str, Any]:
     :return: Dictionary containing metadata analysis
     """
     num_conversations = len(data)
-    total_messages = sum(len(conv.mapping) for conv in data)
+    total_messages = sum(
+        sum(1 for node in conv.mapping.values() if node.message)
+        for conv in data
+    )
     avg_messages_per_conversation = round(total_messages / num_conversations, 2)
 
     def get_message_length(node):
@@ -91,16 +95,24 @@ def analyze_data(data: List[ChatGPTData]) -> Dict[str, Any]:
             return length
         return 0
 
-    avg_message_length = round(sum(
-        get_message_length(node) for conv in data for node in conv.mapping.values()
-    ) / total_messages, 2)
+    total_message_length = sum(
+        get_message_length(node)
+        for conv in data
+        for node in conv.mapping.values()
+        if node.message
+    )
+    avg_message_length = round(total_message_length / total_messages, 2)
 
     # Additional metadata analysis
-    max_messages_per_conversation = max(len(conv.mapping) for conv in data)
-    min_messages_per_conversation = min(len(conv.mapping) for conv in data)
-    total_characters = sum(
-        get_message_length(node) for conv in data for node in conv.mapping.values()
+    max_messages_per_conversation = max(
+        sum(1 for node in conv.mapping.values() if node.message)
+        for conv in data
     )
+    min_messages_per_conversation = min(
+        sum(1 for node in conv.mapping.values() if node.message)
+        for conv in data
+    )
+    total_characters = total_message_length
 
     return {
         'num_conversations': num_conversations,
@@ -278,22 +290,34 @@ def calculate_score_from_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
     min_avg_message_length = validation_config["MIN_AVG_MESSAGE_LENGTH"]
     threshold_score = validation_config["THRESHOLD_SCORE"]
 
-    # Initialize the score
+    # Initialize the score and validity status
     score = 0
+    is_valid = True
 
-    # Calculate the score proportionally based on the metadata and thresholds
-    if min_conversations > 0:
-        score += min(metadata["num_conversations"] / min_conversations, 1) * 30
-    if min_avg_messages > 0:
-        score += min(metadata["avg_messages_per_conversation"] / min_avg_messages, 1) * 30
-    if min_avg_message_length > 0:
-        score += min(metadata["avg_message_length"] / min_avg_message_length, 1) * 40
+    # Check if the minimum thresholds are met
+    if metadata["num_conversations"] < min_conversations:
+        is_valid = False
+    if metadata["avg_messages_per_conversation"] < min_avg_messages:
+        is_valid = False
+    if metadata["avg_message_length"] < min_avg_message_length:
+        is_valid = False
 
-    # Round the score up to the nearest integer and ensure it is between 0 and 100
-    score = max(0, min(math.ceil(score), 100))
+    # Calculate the score proportionally based on the metadata and thresholds if the conversation is valid
+    if is_valid:
+        if min_conversations > 0:
+            score += min(metadata["num_conversations"] / min_conversations, 1) * 30
+        if min_avg_messages > 0:
+            score += min(metadata["avg_messages_per_conversation"] / min_avg_messages, 1) * 30
+        if min_avg_message_length > 0:
+            score += min(metadata["avg_message_length"] / min_avg_message_length, 1) * 40
+
+        # Ensure the score is between 0 and 100
+        score = max(0, min(score, 100))
+    else:
+        score = 0
 
     # Return a dictionary with the score and validity status
     return {
-        'is_valid': score >= threshold_score,
+        'is_valid': is_valid and score >= threshold_score,
         'score': score
     }
