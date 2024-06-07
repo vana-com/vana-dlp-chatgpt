@@ -43,16 +43,9 @@ The Vana command line interface (`vanacli`) is the primary command line tool for
 It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.
 
 ### Setup vanacli
-Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to use the `vanacli` to generate keys
 
-```bash
-git clone git@github.com:vana-com/vana-framework.git
-cd vana-framework
-poetry install
-python setup_vanacli.py
-> vanacli command set up successfully!
-
-# Restart CLI to use `vanacli` command
+```shell
+pip install vana
 ```
 
 ## Run Tests
