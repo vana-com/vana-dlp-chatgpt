@@ -8,9 +8,9 @@ This tutorial introduces the concept of data liquidity pools and proof of contri
 Note that you will not be rewarded in GPTDAT - this testnet tutorial just writes scores onchain, but does not yet support claiming GPTDAT. 
 
 By continuing in this tutorial, you agree to the following
-- The participant acknowledges that the testnet is provided solely on an “as is” and “as available” basis for experimental purposes. The functionality of the testnet remains experimental and has not undergone comprehensive testing.
-- VANA expressly disclaims any representations or warranties regarding the operability, accuracy, or reliability of the testnet.
-- The participant agrees that participation in the testnet neither constitutes an investment nor implies an expectation of profit. There is no promise or implication of future value or potential return on any contributions of resources, time, or effort.
+- The testnet is provided solely on an “as is” and “as available” basis for experimental purposes. The functionality of the testnet remains experimental and has not undergone comprehensive testing.
+- Vana expressly disclaims any representations or warranties regarding the operability, accuracy, or reliability of the testnet.
+- Participation in the testnet neither constitutes an investment nor implies an expectation of profit. There is no promise or implication of future value or potential return on any contributions of resources, time, or effort.
 - I confirm that I am not a citizen of the United States or Canada, nor am I a citizen or resident of any nation or region subjected to comprehensive sanctions, including but not limited to Cuba, North Korea, Crimea, Donetsk, Luhansk, Iran, or Syria.
 
 ### Testnet disclaimers
@@ -36,16 +36,9 @@ poetry install
 Configure the environment variables by copying and modifying the `.env.example` file, to a `.env` file in the root of the project. 
 
 ## Setup vanacli
-Clone and set up the [vana-framework](https://github.com/vana-com/vana-framework) repository to use the `vanacli` to generate keys
 
-```bash
-git clone git@github.com:vana-com/vana-framework.git
-cd vana-framework
-poetry install
-python setup_vanacli.py
-> vanacli command set up successfully!
-
-# Restart CLI to use `vanacli` command
+```shell
+pip install vana
 ```
 
 ## Create a Wallet
