@@ -81,11 +81,11 @@ First, fund your metamask or other evm-compatible wallet from the faucet so you 
 Add the Satori Testnet to your metamask wallet: 
 ```bash
 Network name: Satori Testnet
-RPC URL: http://rpc.satori.vana.com
+RPC URL: http://rpc.satori.vana.org
 Chain ID: 14801
 Currency: DAT
 ```
-Note you can only use the faucet once per day. Use the testnet faucet available at https://faucet.vana.com to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
+Note you can only use the faucet once per day. Use the testnet faucet available at https://faucet.vana.org to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
 
 Get your wallet address for all three accounts
 ```bash
@@ -116,7 +116,7 @@ Copy the address and private key over to the .env file:
 ```.env
 DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
-SATORI_RPC_URL=http://rpc.satori.vana.com
+SATORI_RPC_URL=http://rpc.satori.vana.org
 ```
 5. Deploy smart contract
 
