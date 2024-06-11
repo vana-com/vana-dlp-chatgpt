@@ -28,7 +28,7 @@ real DAT, they cost you test DAT which you must get from a faucet. Testnet token
 Make sure to install the project dependencies:
 
 ```bash
-git clone git@github.com:vana-com/vana-dlp-chatgpt.git
+git clone https://github.com/vana-com/vana-dlp-chatgpt.git
 cd vana-dlp-chatgpt
 poetry install
 ```
