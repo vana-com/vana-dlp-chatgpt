@@ -1,6 +1,6 @@
 # Running the ChatGPT DLP on Testnet
 
-This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It will take about 1 hour to get setup. You will: 
+This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It is based on the standard [smart contract template](https://github.com/vana-com/dlp-smart-contracts) and [validator template](https://github.com/vana-com/vana-dlp-chatgpt), and will take about 1 hour to get setup. You will:
 - Deploy a data liquidity pool smart contract
 - Register validators to run proof of contribution, ensuring chatGPT data quality
 - Submit chatGPT data to test that proof of contribution is working
@@ -164,6 +164,33 @@ poetry run python -m chatgpt.nodes.validator --node_server.external_ip=127.0.0.1
 ```
 
 ## Send addFile transaction
-- Visit [GPT Data DAO](https://www.gptdatadao.org/claim/upload), connect a wallet and upload a file. In the console logs, we will see the uploaded file URL and the encryption key. 
+- Visit [the demo DLP UI](https://dlp-ui.vercel.vana.com/claim/upload), connect a wallet and upload a file.
+    - Click on the gear icon to edit the DLP contract address and public part of the encryption key in the UI to match the deployed contract address and public key.
+    - In the console logs, we will see the uploaded file URL and the encryption key.
 - Paste the URL and encryption key in the `addFile` function in the deployed smart contract: https://satori.vanascan.io/address/<deployed_contract_address>?tab=write_contract
 - Your validator should pick up the files, and write the file scores back on chain
+
+# Running a validator on an existing DLP
+
+In order to run a validator for an existing DLP, you will need to request a few things from the DLP owner:
+
+* The private Redis credentials for the DLP validator network
+* The private decryption key for the DLP validator network
+
+Once you have these, you can set up your validator node. Get started with [the above instructions for DLP creators](#get-started), skipping the steps for deploying the smart contract.
+
+The basic steps are:
+
+1. Install the Vana CLI with `pip install vana`
+2. Create one wallet with `vanacli wallet create`.
+3. Send DAT tokens to the **hotkey** address of your wallet.
+4. Submit a validator registration transaction: `poetry run python -m chatgpt.nodes.validator --wallet.name=validator_4000 --dlp.register 0.001`.
+5. Wait for the DLP owner to accept your registration request.
+6. Run your validator node: `poetry run python -m chatgpt.nodes.validator --node_server.external_ip=127.0.0.1 --node_server.port=4000 --wallet.name=validator_4000`
+7. Add a file to the DLP and watch your validator node score it! ([instructions above](#send-addfile-transaction))
+
+> Note: if the DLP has been heavily modified from the starter template, you may not be able to register a validator with the CLI. In this case, you can register it through the [Satori explorer](https://satori.vanascan.io/).
+> 1. Import your hotkey into a browser-compatible wallet like MetaMask.
+> 2. Navigate to the Write proxy tab for the verified contract for the DLP in the Satori explorer. You can get this URL from the DLP owner. [Here is an example](https://satori.vanascan.io/address/0x4eFF0E1E2D6A5F549A1d3a8AAb5a175E4AD19a14?tab=write_proxy#76980d93).
+> 3. Connect to your hotkey with the button at the bottom of the page.
+> 4. Submit a validator registration transaction with the **public** addresses of your hotkey and coldkey as the validator and validator owner addresses, along with an amount of DAT tokens to stake. Ensure you stake at least the minimum required by the DLP.
