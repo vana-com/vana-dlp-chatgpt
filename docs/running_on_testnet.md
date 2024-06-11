@@ -11,7 +11,7 @@ By continuing in this tutorial, you agree to the following
 - The testnet is provided solely on an “as is” and “as available” basis for experimental purposes. The functionality of the testnet remains experimental and has not undergone comprehensive testing.
 - Vana expressly disclaims any representations or warranties regarding the operability, accuracy, or reliability of the testnet.
 - Participation in the testnet neither constitutes an investment nor implies an expectation of profit. There is no promise or implication of future value or potential return on any contributions of resources, time, or effort.
-- I confirm that I am not a citizen of the United States or Canada, nor am I a citizen or resident of any nation or region subjected to comprehensive sanctions, including but not limited to Cuba, North Korea, Crimea, Donetsk, Luhansk, Iran, or Syria.
+- I confirm that I am not a citizen of the United States or Canada, nor am I a citizen or resident of any nation or region subjected to comprehensive sanctions, including but not limited to Cuba, North Korea, Russia, Belarus, Crimea, Donetsk, Luhansk, Iran, or Syria.
 
 ### Testnet disclaimers
 
