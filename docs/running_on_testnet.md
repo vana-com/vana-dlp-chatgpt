@@ -140,8 +140,9 @@ Before validators can begin participating in the DLP, they must be registered. R
 validators.
 
 ```bash
-poetry run python -m chatgpt.nodes.validator --wallet.name=validator_4000 --dlp.register 0.001
-poetry run python -m chatgpt.nodes.validator --wallet.name=validator_4001 --dlp.register 0.001
+# Note: we are using vanacli from this repo, and not the global vanacli to ensure DLP specific commands are available
+./vanacli dlp register --wallet.name=validator_4000 --wallet.hotkey=default --stake_amount=0.001
+./vanacli dlp register --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=0.001
 ```
 
 Afterward, the transaction must be accepted by calling the acceptValidator function in the deployed smart contract, which can be done like so:

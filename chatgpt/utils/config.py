@@ -17,8 +17,9 @@
 
 import argparse
 import os
-from munch import Munch, munchify
+
 import vana
+from munch import Munch, munchify
 
 # Validation config for the DLP based on network
 validation_config: Munch = munchify(
@@ -82,6 +83,12 @@ def add_args(cls, parser):
                         default=10)  # Every 60 seconds on the testnet
     # default=360)
 
+    dlp_implementation_abi_path = os.path.join(os.path.dirname(__file__), "../dlp-implementation-abi.json")
+    parser.add_argument("--dlp.abi_path",
+                        type=str,
+                        help="The full path to the DLP Smart Contract ABI JSON file",
+                        default=dlp_implementation_abi_path)
+
     parser.add_argument(
         "--node.epoch_length",
         type=int,
@@ -92,10 +99,6 @@ def add_args(cls, parser):
 
 def add_validator_args(cls, parser):
     """Add validator specific arguments to the parser."""
-
-    parser.add_argument("--dlp.register", type=float,
-                        help="Register this validator to the DLP, specifying the amount of stake to post to the DLP",
-                        default=None)
 
     parser.add_argument(
         "--node.name",
