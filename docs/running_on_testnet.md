@@ -1,6 +1,6 @@
 # Running the ChatGPT DLP on Testnet
 
-This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It is based on the standard [smart contract template]([https://github.com/vana-com/dlp-smart-contracts](https://github.com/vana-com/vana-dlp-smart-contracts/tree/2ada9aac3a54dc193903fb4d0e0886bfe7c92e1f) and [validator template](https://github.com/vana-com/vana-dlp-chatgpt), and will take about 1 hour to get setup. You will:
+This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It is based on the standard [smart contract template](https://github.com/vana-com/vana-dlp-smart-contracts/tree/2ada9aac3a54dc193903fb4d0e0886bfe7c92e1f) and [validator template](https://github.com/vana-com/vana-dlp-chatgpt), and will take about 1 hour to get setup. You will:
 - Deploy a data liquidity pool smart contract
 - Register validators to run proof of contribution, ensuring chatGPT data quality
 - Submit chatGPT data to test that proof of contribution is working
