@@ -20,7 +20,7 @@ real DAT, they cost you test DAT which you must get from a faucet. Testnet token
 
 ### Words of Wisdom
 
-- Do not expose your private keys or mnemonric phrase.
+- Do not expose your private keys or mnemonic phrase.
 - Do not reuse the password of your mainnet wallet. 
 
 ## Get started
