@@ -20,5 +20,5 @@ from dotenv import load_dotenv
 load_dotenv()
 
 __dlp_vana_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
-__dlp_moksha_contract__ = "0x4e950420bdC60355Bbd34216DA5F6F77E73E9F8F"
+__dlp_moksha_contract__ = "0xee4e3Fd107BE4097718B8aACFA3a8d2d9349C9a5"
 __dlp_satori_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
