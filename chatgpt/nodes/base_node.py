@@ -20,14 +20,11 @@ import json
 import os
 from abc import ABC, abstractmethod
 
-import vana
-
 import chatgpt
+import vana
 from chatgpt.utils.config import check_config, add_args, config
 from chatgpt.utils.misc import ttl_get_block
 from chatgpt.utils.validator import as_wad
-
-dlp_implementation_abi_path = os.path.join(os.path.dirname(__file__), "../dlp-implementation-abi.json")
 
 
 class BaseNode(ABC):
@@ -88,7 +85,7 @@ class BaseNode(ABC):
         try:
             self.wallet = vana.Wallet(config=self.config)
             self.chain_manager = vana.ChainManager(config=self.config)
-            with open(dlp_implementation_abi_path) as f:
+            with open(self.config.dlp.abi_path) as f:
                 self.dlp_contract = self.chain_manager.web3.eth.contract(address=self.config.dlp.contract,
                                                                          abi=json.load(f))
 
@@ -98,14 +95,11 @@ class BaseNode(ABC):
             # Ensure hotkey is available before registering
             # This will throw if the hotkey is not available
             if self.wallet.hotkey.address:
-                # Register the wallet with the chain manager
-                self.chain_manager.register(self.wallet, self.config.dlpuid)
-
                 vana.logging.info(f"Wallet: {self.wallet}")
                 vana.logging.info(f"Chain Manager: {self.chain_manager}")
 
                 # Check if the validator is registered on the network before proceeding further.
-                # self.check_registered()
+                self.check_registered()
 
                 vana.logging.info(
                     f"Running node on data liquidity pool: {self.config.dlpuid} with hotkey {self.wallet.hotkey.address} using network: {self.chain_manager.config.chain.chain_endpoint}")
@@ -133,7 +127,7 @@ class BaseNode(ABC):
     def resync_state(self):
         ...
 
-    def sync(self, skip_registration_check=False):
+    def sync(self):
         """
         Wrapper for synchronizing the state of the network for the given miner or validator.
         """
@@ -145,8 +139,7 @@ class BaseNode(ABC):
         self.last_synced_block = current_block
 
         # Ensure validator hotkey is still registered on the network.
-        if skip_registration_check is False:
-            self.check_registered()
+        self.check_registered()
 
         if self.should_sync_state():
             self.resync_state()
@@ -169,7 +162,8 @@ class BaseNode(ABC):
 
     def check_registered(self):
         validator_count = self.dlp_contract.functions.activeValidatorsListsCount().call()
-        active_validator_addresses: list[str] = self.dlp_contract.functions.activeValidatorsLists(validator_count).call()
+        active_validator_addresses: list[str] = self.dlp_contract.functions.activeValidatorsLists(
+            validator_count).call()
         self.state.set_hotkeys(active_validator_addresses)
 
         if not active_validator_addresses.__contains__(self.wallet.hotkey.address):
