@@ -19,6 +19,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-__dlp_vana_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
-__dlp_moksha_contract__ = "0x4e950420bdC60355Bbd34216DA5F6F77E73E9F8F"
-__dlp_satori_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
+__dlp_vana_contract__ = "0xa0519f5ADc4e82729b21Ef1586d397260D9B9E45"
+__dlp_moksha_contract__ = "0xee4e3Fd107BE4097718B8aACFA3a8d2d9349C9a5"
+__dlp_satori_contract__ = "0xa0519f5ADc4e82729b21Ef1586d397260D9B9E45"
+
+__dlp_token_vana_contract__ = "0x3db29b7ED68Ca561794039B4D675f68fb64D6ac3"
+__dlp_token_moksha_contract__ = "0xF1925473bA6aa147EeB2529197C2704454D66b43"
+__dlp_token_satori_contract__ = "0x3db29b7ED68Ca561794039B4D675f68fb64D6ac3"
