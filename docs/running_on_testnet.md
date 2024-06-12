@@ -1,6 +1,6 @@
 # Running the ChatGPT DLP on Testnet
 
-This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It is based on the standard [smart contract template](https://github.com/vana-com/dlp-smart-contracts) and [validator template](https://github.com/vana-com/vana-dlp-chatgpt), and will take about 1 hour to get setup. You will:
+This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It is based on the standard [smart contract template](https://github.com/vana-com/vana-dlp-smart-contracts/tree/2ada9aac3a54dc193903fb4d0e0886bfe7c92e1f) and [validator template](https://github.com/vana-com/vana-dlp-chatgpt), and will take about 1 hour to get setup. You will:
 - Deploy a data liquidity pool smart contract
 - Register validators to run proof of contribution, ensuring chatGPT data quality
 - Submit chatGPT data to test that proof of contribution is working
@@ -100,7 +100,7 @@ Now, send DAT from your metamask wallet to these three wallets. You are funding 
 You're now ready to deploy a DLP smart contract, creating your own data DAO. You will then register two validators through the smart contract. The validators will be running proof of contribution. 
 
 1. Install hardhat: https://hardhat.org/hardhat-runner/docs/getting-started#installation
-2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts
+2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts/tree/2ada9aac3a54dc193903fb4d0e0886bfe7c92e1f (this version is compatible with the latest vana-dlp-chatgpt)
 3. Install dependencies
 
 ```bash
