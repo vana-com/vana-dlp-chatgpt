@@ -20,6 +20,11 @@ We are building towards a user-owned foundation model, trained by 100M users who
 
 ## Getting Started
 
+> <b>Minimum hardware requirements:</b>  
+Local: 1 CPU, 8GB RAM, 10GB free disk space  
+AWS: t3.large, m5.large or better  
+GCP: n1-standard-2 or better  
+
 To get started with the ChatGPT DLP, follow these steps:
 
 1. Clone the repository:
