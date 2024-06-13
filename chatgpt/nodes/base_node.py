@@ -63,8 +63,8 @@ class BaseNode(ABC):
 
     @staticmethod
     def setup_config_token(config: vana.Config):
-        if config.get("__is_set", {}).get("dlp_token.contract"):
-            return config.dlp_token.contract
+        if config.get("__is_set", {}).get("dlp.token_contract"):
+            return config.dlp.token_contract
         else:
             return BaseNode.determine_dlp_token_contract(config.chain.network)
 
@@ -75,7 +75,7 @@ class BaseNode(ABC):
         self.check_config(self.config)
 
         self.config.dlp.contract = BaseNode.setup_config(self.config)
-        self.config.dlp_token.contract = BaseNode.setup_config_token(self.config)
+        self.config.dlp.token_contract = BaseNode.setup_config_token(self.config)
 
         # Set up logging with the provided configuration and directory.
         vana.logging(config=self.config, logging_dir=self.config.full_path)
@@ -103,7 +103,7 @@ class BaseNode(ABC):
 
             with open(self.config.dlp_token.abi_path) as f:
                 self.dlp_token_contract = self.chain_manager.web3.eth.contract(
-                    address=self.config.dlp_token.contract,
+                    address=self.config.dlp.token_contract,
                     abi=json.load(f)
                 )
 

@@ -34,27 +34,28 @@ class RegisterCommand(BaseCommand):
         """
         config = BaseNode.config()
         config.dlp.contract = BaseNode.setup_config(config)
-        config.dlp_token.contract = BaseNode.setup_config_token(config)
+        config.dlp.token_contract = BaseNode.setup_config_token(config)
         chain_manager = vana.ChainManager(config=config)
         wallet = vana.Wallet(config=config)
 
         with open(config.dlp.abi_path) as f:
             dlp_contract = chain_manager.web3.eth.contract(address=config.dlp.contract, abi=json.load(f))
 
-        with open(config.dlp_token.abi_path) as f:
-            token_contract = chain_manager.web3.eth.contract(address=config.dlp_token.contract, abi=json.load(f))
+        with open(config.dlp.token_abi_path) as f:
+            token_contract = chain_manager.web3.eth.contract(address=config.dlp.token_contract, abi=json.load(f))
 
         validator_address = wallet.hotkey.address
         validator_owner_address = wallet.coldkeypub.to_checksum_address()
         stake_amount = cli.config.stake_amount
+        stake_amount_wad = cli.config.stake_amount * 1e18
 
         # Step 1: Approve DLP contract to spend validator owner's DLPTokens
-        approval_fn = token_contract.functions.approve(dlp_contract.address, stake_amount)
+        approval_fn = token_contract.functions.approve(dlp_contract.address, stake_amount_wad)
         chain_manager.send_transaction(approval_fn, wallet.coldkey)
         vana.logging.info(f"Approved DLP contract at {dlp_contract.address} to spend {stake_amount} DLPTokens")
 
         # Step 2: Register the validator
-        registration_fn = dlp_contract.functions.registerValidator(validator_address, validator_owner_address, stake_amount)
+        registration_fn = dlp_contract.functions.registerValidator(validator_address, validator_owner_address, stake_amount_wad)
         chain_manager.send_transaction(registration_fn, wallet.coldkey)
         vana.logging.info(f"Registered validator {validator_address} with owner {validator_owner_address} and staked {stake_amount} DLPTokens")
 
