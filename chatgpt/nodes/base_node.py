@@ -101,7 +101,7 @@ class BaseNode(ABC):
                     abi=json.load(f)
                 )
 
-            with open(self.config.dlp_token.abi_path) as f:
+            with open(self.config.dlp.token_abi_path) as f:
                 self.dlp_token_contract = self.chain_manager.web3.eth.contract(
                     address=self.config.dlp.token_contract,
                     abi=json.load(f)
