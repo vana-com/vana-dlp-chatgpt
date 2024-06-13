@@ -25,6 +25,10 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref || github.ref }}
 
+      - name: Get current commit SHA
+        id: current_sha
+        run: echo "::set-output name=sha::$(git rev-parse HEAD)"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -37,7 +41,7 @@ jobs:
       - name: Set Docker image tags
         id: tags
         run: |
-          TAGS="${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:${{ github.sha }}"
+          TAGS="${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:${{ steps.current_sha.outputs.sha }}"
           if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.event.inputs.ref }}" == "main" ]]; then
             TAGS="$TAGS,${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest"
           fi
