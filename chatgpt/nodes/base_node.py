@@ -93,6 +93,8 @@ class BaseNode(ABC):
         try:
             self.wallet = vana.Wallet(config=self.config)
             self.chain_manager = vana.ChainManager(config=self.config)
+            self.state = self.chain_manager.state(self.config.dlpuid) if self.chain_manager else None
+
             with open(self.config.dlp.abi_path) as f:
                 self.dlp_contract = self.chain_manager.web3.eth.contract(
                     address=self.config.dlp.contract,
@@ -123,7 +125,6 @@ class BaseNode(ABC):
             self.wallet = None
             self.chain_manager = None
 
-        self.state = self.chain_manager.state(self.config.dlpuid) if self.chain_manager else None
         vana.logging.info(f"State: {self.state}" if self.state else "State: Not initialized")
 
         self.step = 0
