@@ -141,8 +141,8 @@ validators.
 
 ```bash
 # Note: we are using vanacli from this repo, and not the global vanacli to ensure DLP specific commands are available
-./vanacli dlp register --wallet.name=validator_4000 --wallet.hotkey=default --stake_amount=8000000000000000000
-./vanacli dlp register --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=8000000000000000000
+./vanacli dlp register --wallet.name=validator_4000 --wallet.hotkey=default --stake_amount=10
+./vanacli dlp register --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=10
 ```
 
 Afterward, the transaction must be accepted by calling the acceptValidator function in the deployed smart contract, which can be done like so:
