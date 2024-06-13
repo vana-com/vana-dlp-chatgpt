@@ -77,6 +77,8 @@ def add_args(cls, parser):
 
     parser.add_argument("--dlp.contract", type=str, help="The contract address of the DLP", default=None)
 
+    parser.add_argument("--dlp_token.contract", type=str, help="The contract address of the DLP Token", default=None)
+
     parser.add_argument("--dlp.tempo",
                         type=int,
                         help="The frequency (in number of blocks) to save data on-chain",
@@ -84,10 +86,16 @@ def add_args(cls, parser):
     # default=360)
 
     dlp_implementation_abi_path = os.path.join(os.path.dirname(__file__), "../dlp-implementation-abi.json")
+    dlp_token_implementation_abi_path = os.path.join(os.path.dirname(__file__), "../dlp-token-implementation-abi.json")
     parser.add_argument("--dlp.abi_path",
                         type=str,
                         help="The full path to the DLP Smart Contract ABI JSON file",
                         default=dlp_implementation_abi_path)
+
+    parser.add_argument("--dlp_token.abi_path",
+                        type=str,
+                        help="The full path to the DLP Token Smart Contract ABI JSON file",
+                        default=dlp_token_implementation_abi_path)
 
     parser.add_argument(
         "--node.epoch_length",
