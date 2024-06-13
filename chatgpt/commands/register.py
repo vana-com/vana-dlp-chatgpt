@@ -28,21 +28,35 @@ class RegisterCommand(BaseCommand):
     """
 
     def run(cli: "vana.cli"):
-        """Creates a new hotkey under this wallet."""
-
+        """
+        Creates a new hotkey under this wallet
+        :arg cli: The CLI object
+        """
         config = BaseNode.config()
         config.dlp.contract = BaseNode.setup_config(config)
+        config.dlp_token.contract = BaseNode.setup_config_token(config)
         chain_manager = vana.ChainManager(config=config)
         wallet = vana.Wallet(config=config)
 
         with open(config.dlp.abi_path) as f:
             dlp_contract = chain_manager.web3.eth.contract(address=config.dlp.contract, abi=json.load(f))
-            validator_address = wallet.hotkey.address
-            validator_owner_address = wallet.coldkeypub.to_checksum_address()
-            stake_amount = cli.config.stake_amount
 
-            registration_fn = dlp_contract.functions.registerValidator(validator_address, validator_owner_address)
-            chain_manager.send_transaction(registration_fn, wallet.hotkey)
+        with open(config.dlp_token.abi_path) as f:
+            token_contract = chain_manager.web3.eth.contract(address=config.dlp_token.contract, abi=json.load(f))
+
+        validator_address = wallet.hotkey.address
+        validator_owner_address = wallet.coldkeypub.to_checksum_address()
+        stake_amount = cli.config.stake_amount
+
+        # Step 1: Approve DLP contract to spend validator owner's DLPTokens
+        approval_fn = token_contract.functions.approve(dlp_contract.address, stake_amount)
+        chain_manager.send_transaction(approval_fn, wallet.coldkey)
+        vana.logging.info(f"Approved DLP contract at {dlp_contract.address} to spend {stake_amount} DLPTokens")
+
+        # Step 2: Register the validator
+        registration_fn = dlp_contract.functions.registerValidator(validator_address, validator_owner_address, stake_amount)
+        chain_manager.send_transaction(registration_fn, wallet.coldkey)
+        vana.logging.info(f"Registered validator {validator_address} with owner {validator_owner_address} and staked {stake_amount} DLPTokens")
 
     @staticmethod
     def check_config(config: "vana.Config"):
