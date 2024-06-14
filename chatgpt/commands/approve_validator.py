@@ -32,7 +32,7 @@ class ApproveValidatorCommand(BaseCommand):
         config = BaseNode.config()
         config.dlp.contract = BaseNode.setup_config(config)
         chain_manager = vana.ChainManager(config=config)
-        wallet = vana.Wallet(config=config)
+        wallet = vana.Wallet(config=cli.config)
 
         with open(config.dlp.abi_path) as f:
             dlp_contract = chain_manager.web3.eth.contract(address=config.dlp.contract, abi=json.load(f))
