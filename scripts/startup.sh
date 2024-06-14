@@ -22,7 +22,7 @@ get_metadata() {
 }
 
 pull_and_get_latest_image_digest() {
-  docker pull "$1"
+  docker pull "$1" > /dev/null 2>&1
   docker inspect --format='{{.RepoDigests}}' "$1" | sed 's/[^[]*\[\([^]]*\)\].*/\1/'
 }
 
