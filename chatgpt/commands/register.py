@@ -47,7 +47,7 @@ class RegisterCommand(BaseCommand):
         validator_address = wallet.hotkey.address
         validator_owner_address = wallet.coldkeypub.to_checksum_address()
         stake_amount = cli.config.stake_amount
-        stake_amount_wad = cli.config.stake_amount * 1e18
+        stake_amount_wad = int(cli.config.stake_amount * 1e18)
 
         # Step 1: Approve DLP contract to spend validator owner's DLPTokens
         approval_fn = token_contract.functions.approve(dlp_contract.address, stake_amount_wad)
