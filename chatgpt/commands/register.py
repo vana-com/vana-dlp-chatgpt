@@ -76,7 +76,7 @@ class RegisterCommand(BaseCommand):
         )
         register_parser.add_argument(
             "--stake_amount",
-            type=int,
+            type=float,
             required=False,
             default=100,
             help="""The amount of tokens to stake for this validator.""",
