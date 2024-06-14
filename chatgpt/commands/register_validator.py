@@ -7,7 +7,7 @@ from rich.prompt import Prompt
 from vana.commands.base_command import BaseCommand
 
 
-class RegisterCommand(BaseCommand):
+class RegisterValidatorCommand(BaseCommand):
     """
     Registers a validator with the DLP smart contract using the stake amount.
 
@@ -24,7 +24,7 @@ class RegisterCommand(BaseCommand):
 
     Example usage::
 
-        ./vanacli dlp register --wallet.name="my_wallet" --wallet.hotkey="my_hotkey" --stake_amount=100
+        ./vanacli dlp register_validator --wallet.name="my_wallet" --wallet.hotkey="my_hotkey" --stake_amount=100
     """
 
     def run(cli: "vana.cli"):
@@ -71,14 +71,14 @@ class RegisterCommand(BaseCommand):
 
     @staticmethod
     def add_args(parser: argparse.ArgumentParser):
-        register_parser = parser.add_parser(
-            "register", help="""Registers a validator to this DLP"""
+        register_validator_parser = parser.add_parser(
+            "register_validator", help="""Registers a validator to this DLP"""
         )
-        register_parser.add_argument(
+        register_validator_parser.add_argument(
             "--stake_amount",
             type=float,
             required=False,
             default=100,
             help="""The amount of tokens to stake for this validator.""",
         )
-        vana.Wallet.add_args(register_parser)
+        vana.Wallet.add_args(register_validator_parser)
