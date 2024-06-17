@@ -74,7 +74,7 @@ if ! command -v docker &> /dev/null; then
   sh get-docker.sh
 fi
 
-IMAGE_DIGEST=$(pull_and_get_image_digest "$IMAGE")
+IMAGE_DIGEST=$(pull_and_get_latest_image_digest "$IMAGE")
 
 # Obtain External IP and Initial Startup
 while [ -z "$EXTERNAL_IP" ]; do
