@@ -44,7 +44,7 @@ poetry run python -m chatgpt.nodes.validator
 ```
 
 ## Generate validator encryption keys
-Validators use a private/public keypair to encrypt the user's encryption keys. To generate a new keypair, follow these steps:
+All DLP validators share a private/public keypair to encrypt the user's encryption keys. To generate a new keypair, follow these steps:
 1. Install GnuPG:
 ```bash
 sudo apt-get install gnupg
