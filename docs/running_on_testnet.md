@@ -118,20 +118,30 @@ DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
 SATORI_RPC_URL=http://rpc.satori.vana.org
 ```
-5. Deploy smart contract
 
+5. Deploy DataLiquidityPool and Token smart contracts. Make a note of 1. the DLP contract address and 2. the token contract address.
 ```bash
 npx hardhat deploy --network satori --tags DLPDeploy
 ```
 
-6. Congratulations, you've deployed the DLP smart contract. You can confirm it's up by searching the address on the block explorer: https://satori.vanascan.io/address/<contract_address> . Copy the deployed smart contract address. 
+6. Congratulations, you've deployed the DLP smart contracts! You can confirm they're up by searching the address for each on the block explorer: https://satori.vanascan.io/address/<address\>.
 
-7. In vana-dlp-chatgpt/.env, add an environment variable DLP_CONTRACT_ADDRESS=0x... (replace with the deployed contract address).
+7. In vana-dlp-chatgpt/.env, add an environment variable DLP_CONTRACT_ADDRESS=0x... and DLP_TOKEN_SATORI_CONTRACT=0x (replace with the deployed contract addresses).
 
-8. Verify the contract, so we can interact with it directly in the block explorer:
+8. Verify the contracts, so we can interact with them directly in the block explorer:
 
 ```bash
-npx hardhat verify --network satori <contract_address>
+npx hardhat verify --network satori <data_liquidity_pool_address>
+npx hardhat verify --network satori <data_liquidity_pool_token_address> <owner_address>
+```
+
+## Fund Validators
+
+In order to register validators, they must have some of your DLP tokens to stake. You can import your owner wallet into metamask and send tokens to the validator wallets, or you can use the CLI:
+
+```bash
+./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4000_hotkey_address>
+./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4001_hotkey_address>
 ```
 
 ## Register Validators
@@ -194,9 +204,9 @@ The basic steps are:
 
 1. Install the Vana CLI with `pip install vana`
 2. Create one wallet with `vanacli wallet create`.
-3. Send DAT tokens to the **hotkey** address of your wallet.
-4. Submit a validator registration transaction: `poetry run python -m chatgpt.nodes.validator --wallet.name=validator_4000 --dlp.register 0.001`.
-5. Wait for the DLP owner to accept your registration request.
+3. Fund the **hotkey** address of your wallet with some of the DLP's tokens. You can ask the DLP creator to send you some tokens.
+4. Submit a validator registration transaction: `./vanacli dlp register_validator --wallet.name=validator_4000 --stake_amount 10`.
+5. Ask the DLP owner to accept your registration request.
 6. Run your validator node: `poetry run python -m chatgpt.nodes.validator --node_server.external_ip=127.0.0.1 --node_server.port=4000 --wallet.name=validator_4000`
 7. Add a file to the DLP and watch your validator node score it! ([instructions above](#send-addfile-transaction))
 
@@ -204,4 +214,4 @@ The basic steps are:
 > 1. Import your hotkey into a browser-compatible wallet like MetaMask.
 > 2. Navigate to the Write proxy tab for the verified contract for the DLP in the Satori explorer. You can get this URL from the DLP owner. [Here is an example](https://satori.vanascan.io/address/0x4eFF0E1E2D6A5F549A1d3a8AAb5a175E4AD19a14?tab=write_proxy#76980d93).
 > 3. Connect to your hotkey with the button at the bottom of the page.
-> 4. Submit a validator registration transaction with the **public** addresses of your hotkey and coldkey as the validator and validator owner addresses, along with an amount of DAT tokens to stake. Ensure you stake at least the minimum required by the DLP.
+> 4. Submit a validator registration transaction with the **public** addresses of your hotkey and coldkey as the validator and validator owner addresses, along with an amount of the required tokens to stake. Ensure you stake at least the minimum of the specific token required by the DLP.
