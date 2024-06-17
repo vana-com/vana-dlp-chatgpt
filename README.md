@@ -43,6 +43,40 @@ poetry install
 poetry run python -m chatgpt.nodes.validator
 ```
 
+## Generate validator encryption keys
+All DLP validators share a private/public keypair to encrypt the user's encryption keys. To generate a new keypair, follow these steps:
+1. Install GnuPG:
+```bash
+sudo apt-get install gnupg
+```
+
+2. Generate a new key pair and follow the prompts:
+```bash
+gpg --full-generate-key
+
+Select the key type (RSA and RSA).
+Specify the key size (3072 bits).
+Set the key expiration time (no expiration).
+Enter your name and email address.
+Choose a passphrase to protect your private key.
+```
+
+3. Export the Private Key - this is what validators will use to decrypt the files:
+```bash
+gpg --export-secret-keys --armor your_email@example.com > private_key.asc
+```
+
+4. Export the Public Key - this is what the UI will use to encrypt the user's symmetric file encryption key
+```bash
+gpg --export --armor your_email@example.com > public_key.asc
+```
+
+5. Base64 encode the private key, and paste it into vana-dlp-chatgpt/.env under `PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64`
+```bash
+base64 -i private_key.asc -o private_key_base64.asc
+```
+
+7. Paste the public key into the [DLP Demo UI](https://dlp-ui.vercel.vana.com/claim/upload) (settings icon on the top right)
 ## Using the CLI
 The Vana command line interface (`vanacli`) is the primary command line tool for interacting with the Vana network.
 It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.
