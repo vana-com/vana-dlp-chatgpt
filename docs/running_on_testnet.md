@@ -107,7 +107,7 @@ You're now ready to deploy a DLP smart contract, creating your own data DAO. You
 yarn install
 ```
 
-4. Create an `.env` file for the smart contract repo. You will need the owner address and private key. 
+4. Create an `.env` file for the smart contract repo. You will need the owner address and private key. You can create a new key by following [the instructions on the README](https://github.com/vana-com/vana-dlp-chatgpt?tab=readme-ov-file#generate-validator-encryption-keys).
 
 ```bash
 cat ~/.vana/wallets/owner/hotkeys/default
