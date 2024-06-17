@@ -145,13 +145,23 @@ validators.
 ./vanacli dlp register_validator --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=10
 ```
 
-Afterward, the transaction must be accepted by calling the acceptValidator function in the deployed smart contract, which can be done like so:
+These transactions must be accepted by calling the approveValidator function in the deployed smart contract.
+
+## Approve Validators
+
+To approve the validators:
+```bash
+./vanacli dlp approve_validator --wallet.name=owner --validator_address=<validator_4000_hotkey_address>
+./vanacli dlp approve_validator --wallet.name=owner --validator_address=<validator_4001_hotkey_address>
+```
+
+Alternatively, you can approve validators through the explorer:
 
 - Visit: https://satori.vanascan.io/address/<deployed_contract_address>?tab=write_contract
 - Connect owner wallet created earlier
 - Write contract tab
-- acceptValidator(newValidatorAddress)
-- Repeat for as many validators
+- approveValidator(newValidatorAddress)
+- Repeat for as many validators as you have
 
 ## Run validator nodes
 Now that validators are registered, you can run the validator nodes.
