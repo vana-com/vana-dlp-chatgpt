@@ -22,7 +22,7 @@ get_metadata() {
 }
 
 pull_and_get_latest_image_digest() {
-  docker pull "$1"
+  docker pull "$1" > /dev/null 2>&1
   docker inspect --format='{{.RepoDigests}}' "$1" | sed 's/[^[]*\[\([^]]*\)\].*/\1/'
 }
 
@@ -57,6 +57,7 @@ restart_container() {
     --log-driver=gcplogs \
     --log-opt gcp-project="$PROJECT" \
     "$IMAGE"
+  docker prune -a -f > /dev/null 2>&1
 }
 
 # Retrieve the metadata values using the function
@@ -73,7 +74,7 @@ if ! command -v docker &> /dev/null; then
   sh get-docker.sh
 fi
 
-IMAGE_DIGEST=$(get_image_digest "$IMAGE")
+IMAGE_DIGEST=$(pull_and_get_image_digest "$IMAGE")
 
 # Obtain External IP and Initial Startup
 while [ -z "$EXTERNAL_IP" ]; do

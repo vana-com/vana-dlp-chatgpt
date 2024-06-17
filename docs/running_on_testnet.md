@@ -100,7 +100,7 @@ Now, send DAT from your metamask wallet to these three wallets. You are funding 
 You're now ready to deploy a DLP smart contract, creating your own data DAO. You will then register two validators through the smart contract. The validators will be running proof of contribution. 
 
 1. Install hardhat: https://hardhat.org/hardhat-runner/docs/getting-started#installation
-2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts/tree/2ada9aac3a54dc193903fb4d0e0886bfe7c92e1f (this version is compatible with the latest vana-dlp-chatgpt)
+2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts/tree/acdae3f4cf5b60426e779f5a3d220486d2a58b5a (this version is compatible with the latest vana-dlp-chatgpt)
 3. Install dependencies
 
 ```bash
@@ -141,17 +141,27 @@ validators.
 
 ```bash
 # Note: we are using vanacli from this repo, and not the global vanacli to ensure DLP specific commands are available
-./vanacli dlp register --wallet.name=validator_4000 --wallet.hotkey=default --stake_amount=0.001
-./vanacli dlp register --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=0.001
+./vanacli dlp register_validator --wallet.name=validator_4000 --wallet.hotkey=default --stake_amount=10
+./vanacli dlp register_validator --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=10
 ```
 
-Afterward, the transaction must be accepted by calling the acceptValidator function in the deployed smart contract, which can be done like so:
+These transactions must be accepted by calling the approveValidator function in the deployed smart contract.
+
+## Approve Validators
+
+To approve the validators:
+```bash
+./vanacli dlp approve_validator --wallet.name=owner --validator_address=<validator_4000_hotkey_address>
+./vanacli dlp approve_validator --wallet.name=owner --validator_address=<validator_4001_hotkey_address>
+```
+
+Alternatively, you can approve validators through the explorer:
 
 - Visit: https://satori.vanascan.io/address/<deployed_contract_address>?tab=write_contract
 - Connect owner wallet created earlier
 - Write contract tab
-- acceptValidator(newValidatorAddress)
-- Repeat for as many validators
+- approveValidator(newValidatorAddress)
+- Repeat for as many validators as you have
 
 ## Run validator nodes
 Now that validators are registered, you can run the validator nodes.

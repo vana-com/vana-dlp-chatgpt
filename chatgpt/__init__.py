@@ -1,5 +1,6 @@
 # The MIT License (MIT)
 # Copyright © 2024 Corsali, Inc. dba Vana
+import os
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 # documentation files (the “Software”), to deal in the Software without restriction, including without limitation
@@ -19,6 +20,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-__dlp_vana_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
-__dlp_moksha_contract__ = "0xee4e3Fd107BE4097718B8aACFA3a8d2d9349C9a5"
-__dlp_satori_contract__ = "0x0b3BbeC20a6C9B469064D0F7B0d05BDB2C0A995C"
+__dlp_vana_contract__ = os.environ.get("DLP_CONTRACT_ADDRESS", "0xa0519f5ADc4e82729b21Ef1586d397260D9B9E45")
+__dlp_moksha_contract__ = os.environ.get("DLP_MOKSHA_CONTRACT", "0xee4e3Fd107BE4097718B8aACFA3a8d2d9349C9a5")
+__dlp_satori_contract__ = os.environ.get("DLP_SATORI_CONTRACT", "0xa0519f5ADc4e82729b21Ef1586d397260D9B9E45")
+
+__dlp_token_vana_contract__ = os.environ.get("DLP_TOKEN_VANA_CONTRACT", "0x3db29b7ED68Ca561794039B4D675f68fb64D6ac3")
+__dlp_token_moksha_contract__ = os.environ.get("DLP_TOKEN_MOKSHA_CONTRACT", "0xF1925473bA6aa147EeB2529197C2704454D66b43")
+__dlp_token_satori_contract__ = os.environ.get("DLP_TOKEN_SATORI_CONTRACT", "0x3db29b7ED68Ca561794039B4D675f68fb64D6ac3")
