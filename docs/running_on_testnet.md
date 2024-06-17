@@ -100,7 +100,7 @@ Now, send DAT from your metamask wallet to these three wallets. You are funding 
 You're now ready to deploy a DLP smart contract, creating your own data DAO. You will then register two validators through the smart contract. The validators will be running proof of contribution. 
 
 1. Install hardhat: https://hardhat.org/hardhat-runner/docs/getting-started#installation
-2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts/tree/2ada9aac3a54dc193903fb4d0e0886bfe7c92e1f (this version is compatible with the latest vana-dlp-chatgpt)
+2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts/tree/acdae3f4cf5b60426e779f5a3d220486d2a58b5a (this version is compatible with the latest vana-dlp-chatgpt)
 3. Install dependencies
 
 ```bash
