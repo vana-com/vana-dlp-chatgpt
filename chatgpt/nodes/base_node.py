@@ -20,14 +20,11 @@ import json
 import os
 from abc import ABC, abstractmethod
 
-import vana
-
 import chatgpt
+import vana
 from chatgpt.utils.config import check_config, add_args, config
 from chatgpt.utils.misc import ttl_get_block
 from chatgpt.utils.validator import as_wad
-
-dlp_implementation_abi_path = os.path.join(os.path.dirname(__file__), "../dlp-implementation-abi.json")
 
 
 class BaseNode(ABC):
@@ -64,6 +61,13 @@ class BaseNode(ABC):
         else:
             return BaseNode.determine_dlp_contract(config.chain.network)
 
+    @staticmethod
+    def setup_config_token(config: vana.Config):
+        if config.get("__is_set", {}).get("dlp.token_contract"):
+            return config.dlp.token_contract
+        else:
+            return BaseNode.determine_dlp_token_contract(config.chain.network)
+
     def __init__(self, config=None):
         base_config = copy.deepcopy(config or BaseNode.config())
         self.config = self.config()
@@ -71,6 +75,7 @@ class BaseNode(ABC):
         self.check_config(self.config)
 
         self.config.dlp.contract = BaseNode.setup_config(self.config)
+        self.config.dlp.token_contract = BaseNode.setup_config_token(self.config)
 
         # Set up logging with the provided configuration and directory.
         vana.logging(config=self.config, logging_dir=self.config.full_path)
@@ -88,24 +93,28 @@ class BaseNode(ABC):
         try:
             self.wallet = vana.Wallet(config=self.config)
             self.chain_manager = vana.ChainManager(config=self.config)
-            with open(dlp_implementation_abi_path) as f:
-                self.dlp_contract = self.chain_manager.web3.eth.contract(address=self.config.dlp.contract,
-                                                                         abi=json.load(f))
+            self.state = self.chain_manager.state(self.config.dlpuid) if self.chain_manager else None
 
-            self.state = self.chain_manager.state(self.config.dlpuid)
-            vana.logging.info(f"State: {self.state}")
+            with open(self.config.dlp.abi_path) as f:
+                self.dlp_contract = self.chain_manager.web3.eth.contract(
+                    address=self.config.dlp.contract,
+                    abi=json.load(f)
+                )
+
+            with open(self.config.dlp.token_abi_path) as f:
+                self.dlp_token_contract = self.chain_manager.web3.eth.contract(
+                    address=self.config.dlp.token_contract,
+                    abi=json.load(f)
+                )
 
             # Ensure hotkey is available before registering
             # This will throw if the hotkey is not available
             if self.wallet.hotkey.address:
-                # Register the wallet with the chain manager
-                self.chain_manager.register(self.wallet, self.config.dlpuid)
-
                 vana.logging.info(f"Wallet: {self.wallet}")
                 vana.logging.info(f"Chain Manager: {self.chain_manager}")
 
                 # Check if the validator is registered on the network before proceeding further.
-                # self.check_registered()
+                self.check_registered()
 
                 vana.logging.info(
                     f"Running node on data liquidity pool: {self.config.dlpuid} with hotkey {self.wallet.hotkey.address} using network: {self.chain_manager.config.chain.chain_endpoint}")
@@ -116,7 +125,6 @@ class BaseNode(ABC):
             self.wallet = None
             self.chain_manager = None
 
-        self.state = self.chain_manager.state(self.config.dlpuid) if self.chain_manager else None
         vana.logging.info(f"State: {self.state}" if self.state else "State: Not initialized")
 
         self.step = 0
@@ -133,7 +141,7 @@ class BaseNode(ABC):
     def resync_state(self):
         ...
 
-    def sync(self, skip_registration_check=False):
+    def sync(self):
         """
         Wrapper for synchronizing the state of the network for the given miner or validator.
         """
@@ -145,8 +153,7 @@ class BaseNode(ABC):
         self.last_synced_block = current_block
 
         # Ensure validator hotkey is still registered on the network.
-        if skip_registration_check is False:
-            self.check_registered()
+        self.check_registered()
 
         if self.should_sync_state():
             self.resync_state()
@@ -169,7 +176,8 @@ class BaseNode(ABC):
 
     def check_registered(self):
         validator_count = self.dlp_contract.functions.activeValidatorsListsCount().call()
-        active_validator_addresses: list[str] = self.dlp_contract.functions.activeValidatorsLists(validator_count).call()
+        active_validator_addresses: list[str] = self.dlp_contract.functions.activeValidatorsLists(
+            validator_count).call()
         self.state.set_hotkeys(active_validator_addresses)
 
         if not active_validator_addresses.__contains__(self.wallet.hotkey.address):
@@ -207,5 +215,30 @@ class BaseNode(ABC):
             return chatgpt.__dlp_satori_contract__
         elif network == "moksha":
             return chatgpt.__dlp_moksha_contract__
+        else:
+            return "unknown"
+
+    @staticmethod
+    def determine_dlp_token_contract(network: str):
+        """Determines the appropriate DLP token contract address based on the given network.
+
+        Args:
+            network (str): The network name. The choices are: "vana", "base_sepolia".
+
+        Returns:
+            str: The token contract address for the specified network.
+        """
+        if os.environ.get("DLP_TOKEN_CONTRACT_ADDRESS"):
+            return os.environ.get("DLP_TOKEN_CONTRACT_ADDRESS")
+
+        if network is None:
+            return None
+
+        if network == "vana":
+            return chatgpt.__dlp_token_vana_contract__
+        elif network == "satori":
+            return chatgpt.__dlp_token_satori_contract__
+        elif network == "moksha":
+            return chatgpt.__dlp_token_moksha_contract__
         else:
             return "unknown"

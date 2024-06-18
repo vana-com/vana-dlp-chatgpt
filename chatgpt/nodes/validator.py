@@ -21,9 +21,9 @@ import threading
 import time
 import traceback
 from traceback import print_exception
-import vana
 
 import chatgpt.protocol
+import vana
 from chatgpt.nodes.base_node import BaseNode
 from chatgpt.utils.config import add_validator_args
 from chatgpt.utils.proof_of_contribution import proof_of_contribution
@@ -49,7 +49,7 @@ class Validator(BaseNode):
             self.node_client = vana.NodeClient(wallet=self.wallet)
 
             # Init sync with the network. Updates the state.
-            self.sync(skip_registration_check=True)
+            self.sync()
 
             # Serve NodeServer to enable external connections.
             self.node_server = ((vana.NodeServer(wallet=self.wallet, config=self.config)
@@ -79,7 +79,6 @@ class Validator(BaseNode):
         """
         vana.logging.info(f"Received {message.input_url} and encrypted key: {message.input_encryption_key}")
         return await proof_of_contribution(message)
-
 
     async def forward(self):
         """
@@ -166,31 +165,14 @@ class Validator(BaseNode):
         ]
         await asyncio.gather(*coroutines)
 
-    async def register_validator(self, stake_amount):
-        # TODO: Consider transferring funds automatically to the hotkey when they are staked.
-        # Currently, the user must transfer funds to the hotkey manually before staking.
-
-        validator_address = self.wallet.hotkey.address
-        validator_owner_address = self.wallet.coldkeypub.to_checksum_address()
-        registration_fn = self.dlp_contract.functions.registerValidator(validator_address, validator_owner_address)
-        self.chain_manager.send_transaction(registration_fn, self.wallet.hotkey)
-
     def run(self):
         """
         Initiates and manages the main loop for the validator on the network.
         """
-        if self.config.dlp.register:
-            vana.logging.info(f"Registering, staking {self.config.dlp.register} tokens.")
-            self.loop.run_until_complete(self.register_validator(self.config.dlp.register))
-            vana.logging.success(f"Staked {self.config.dlp.register} tokens.")
-            exit()
+        # Check that validator is registered on the network.
+        self.sync()
 
-        # TODO: this conditional was added mindlessly to prevent crashes and may need to be refactored
-        if self.chain_manager:
-            # Check that validator is registered on the network.
-            self.sync()
-
-            vana.logging.info(f"Validator starting at block: {self.block}")
+        vana.logging.info(f"Validator starting at block: {self.block}")
 
         # This loop maintains the validator's operations until intentionally stopped.
         try:

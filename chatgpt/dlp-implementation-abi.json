@@ -21,11 +21,6 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "AddingFilePaused",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -34,6 +29,17 @@
       }
     ],
     "name": "AddressEmptyCode",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "AddressInsufficientBalance",
     "type": "error"
   },
   {
@@ -98,8 +104,29 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "reuired",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "current",
+        "type": "uint256"
+      }
+    ],
+    "name": "InvalidValidatorStatus",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "MasterKeyAlreadySet",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotFileOwner",
     "type": "error"
   },
   {
@@ -109,12 +136,7 @@
   },
   {
     "inputs": [],
-    "name": "NotValidator",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotValidatorColdKey",
+    "name": "NotValidatorOwner",
     "type": "error"
   },
   {
@@ -145,6 +167,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "TooManyValidators",
     "type": "error"
@@ -167,13 +200,33 @@
   },
   {
     "inputs": [],
-    "name": "ValidatorAlreadyRegistered",
+    "name": "WithdrawNotAllowed",
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "ValidatorNotRegistered",
-    "type": "error"
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "contributorAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "ContributionRewardClaimed",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -220,7 +273,7 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "ownerAddress",
+        "name": "contributorAddress",
         "type": "address"
       },
       {
@@ -231,6 +284,32 @@
       }
     ],
     "name": "FileAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newFileRewardDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "FileRewardDelayUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newFileRewardFactor",
+        "type": "uint256"
+      }
+    ],
+    "name": "FileRewardFactorUpdated",
     "type": "event"
   },
   {
@@ -295,6 +374,38 @@
       }
     ],
     "name": "MaxNumberOfValidatorsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newMinStakeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinStakeAmountUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferStarted",
     "type": "event"
   },
   {
@@ -521,6 +632,19 @@
         "internalType": "address",
         "name": "validatorAddress",
         "type": "address"
+      }
+    ],
+    "name": "ValidatorInactivated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
       },
       {
         "indexed": true,
@@ -642,6 +766,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -692,23 +823,29 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "addRewards",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "validatorsRewardAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "addRewardForValidators",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "addingFilePaused",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "contributorsRewardAmount",
+        "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "name": "addRewardsForContributors",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -722,6 +859,160 @@
     "name": "approveValidator",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimContributionReward",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "contributorAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "contributorFiles",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "fileId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "contributorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "encryptedKey",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "addedTimestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reward",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rewardWithdrawn",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "verificationsCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.FileResponse",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "contributorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "contributorInfo",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "contributorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fileIdsCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.ContributorInfoResponse",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "contributors",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "contributorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fileIdsCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.ContributorInfoResponse",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "contributorsCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -753,6 +1044,24 @@
       }
     ],
     "name": "deregisterValidator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "validatorAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "deregisterValidatorByOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -860,6 +1169,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "fileRewardDelay",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "fileRewardFactor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -875,24 +1210,31 @@
     "name": "fileVerifications",
     "outputs": [
       {
-        "internalType": "address",
-        "name": "validatorAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timespatmp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "score",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "metadata",
-        "type": "string"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validatorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timespatmp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "score",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadata",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.FileVerificationInfo",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -909,29 +1251,51 @@
     "name": "files",
     "outputs": [
       {
-        "internalType": "address",
-        "name": "ownerAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "url",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "encryptedKey",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "addedTimestamp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "verificationsCount",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "fileId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "contributorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "encryptedKey",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "addedTimestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reward",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rewardWithdrawn",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "verificationsCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.FileResponse",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -1080,7 +1444,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "inactivateValidator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "ownerAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenAddress",
         "type": "address"
       },
       {
@@ -1126,6 +1508,16 @@
       {
         "internalType": "uint256",
         "name": "newEpochRewardAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newFileRewardFactor",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newFileRewardDelay",
         "type": "uint256"
       }
     ],
@@ -1208,6 +1600,19 @@
   },
   {
     "inputs": [],
+    "name": "pendingOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "proxiableUUID",
     "outputs": [
       {
@@ -1266,14 +1671,19 @@
         "type": "address"
       },
       {
-        "internalType": "address payable",
+        "internalType": "address",
         "name": "validatorOwnerAddress",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stakeAmount",
+        "type": "uint256"
       }
     ],
     "name": "registerValidator",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1353,7 +1763,20 @@
   },
   {
     "inputs": [],
-    "name": "totalRewardAmount",
+    "name": "token",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalContributorsRewardAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1367,6 +1790,19 @@
   {
     "inputs": [],
     "name": "totalStaked",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalValidatorsRewardAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1427,11 +1863,50 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "newFileRewardDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateFileRewardDelay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newFileRewardFactor",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateFileRewardFactor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "newMaxNumberOfValidators",
         "type": "uint256"
       }
     ],
     "name": "updateMaxNumberOfValidators",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newMinStakeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateMinStakeAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1538,45 +2013,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "validatorAddress",
-        "type": "address"
-      }
-    ],
-    "name": "validatorInfo",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "ownerAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "stakeAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "enum IDataLiquidityPool.ValidatorStatus",
-        "name": "status",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "filesToVerifyIndex",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "filesToVerifyCount",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "validatorScoreKappa",
     "outputs": [
@@ -1640,6 +2076,72 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "validators",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validatorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "ownerAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "stakeAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum IDataLiquidityPool.ValidatorStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "firstBlockNumber",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lastBlockNumber",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "grantedAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "filesToVerifyIndex",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "filesToVerifyCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.ValidatorInfoResponse",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "validatorsCount",
     "outputs": [
@@ -1647,6 +2149,85 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "validatorsInfo",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validatorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "ownerAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "stakeAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum IDataLiquidityPool.ValidatorStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "firstBlockNumber",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lastBlockNumber",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "grantedAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "filesToVerifyIndex",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "filesToVerifyCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.ValidatorInfoResponse",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "validatorsWithFilesToVerify",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
