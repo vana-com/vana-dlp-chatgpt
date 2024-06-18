@@ -73,7 +73,7 @@ gpg --export --armor your_email@example.com > public_key.asc
 
 5. Base64 encode the private key, and paste it into vana-dlp-chatgpt/.env under `PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64`
 ```bash
-base64 -i private_key.asc -o private_key_base64.asc
+base64 -i private_key.asc > private_key_base64.asc
 ```
 
 7. Paste the public key into the [DLP Demo UI](https://dlp-ui.vercel.vana.com/claim/upload) (settings icon on the top right)
