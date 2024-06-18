@@ -86,8 +86,8 @@ def _ttl_hash_gen(seconds: int):
         yield floor((time.time() - start_time) / seconds)
 
 
-# 12 seconds updating block.
-@ttl_cache(maxsize=1, ttl=12)
+# New blocks are mined every 6 seconds
+@ttl_cache(maxsize=1, ttl=6)
 def ttl_get_block(self) -> int:
     """
     Retrieves the current block number from the blockchain. This method is cached with a time-to-live (TTL)

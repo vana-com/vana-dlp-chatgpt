@@ -81,7 +81,8 @@ base64 -i private_key.asc > private_key_base64.asc
 The Vana command line interface (`vanacli`) is the primary command line tool for interacting with the Vana network.
 It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.
 
-### Setup vanacli
+### (Optional) Setup vanacli
+To install vanacli system-wide, run the following command:
 
 ```shell
 pip install vana
