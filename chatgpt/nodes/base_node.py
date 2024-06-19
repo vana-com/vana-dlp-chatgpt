@@ -155,7 +155,7 @@ class BaseNode(ABC):
         # Ensure validator hotkey is still registered on the network.
         self.check_registered()
 
-        if self.should_sync_state():
+        if current_block % self.config.node.epoch_length == 0:
             self.resync_state()
             self.state.save()
 
@@ -186,12 +186,6 @@ class BaseNode(ABC):
             )
             # Do not exit, registration status can change
             # exit()
-
-    def should_sync_state(self):
-        """
-        Check if enough epoch blocks have elapsed since the last checkpoint to sync.
-        """
-        return (self.block - self.state.last_update) > self.config.node.epoch_length
 
     @staticmethod
     def determine_dlp_contract(network: str):

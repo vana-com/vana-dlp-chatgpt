@@ -35,7 +35,8 @@ poetry install
 
 Configure the environment variables by copying and modifying the `.env.example` file, to a `.env` file in the root of the project. 
 
-## Setup vanacli
+## (Optional) Setup vanacli
+To install vanacli system-wide, run the following command:
 
 ```shell
 pip install vana
@@ -81,7 +82,7 @@ First, fund your metamask or other evm-compatible wallet from the faucet so you 
 Add the Satori Testnet to your metamask wallet: 
 ```bash
 Network name: Satori Testnet
-RPC URL: http://rpc.satori.vana.org
+RPC URL: https://rpc.satori.vana.org
 Chain ID: 14801
 Currency: DAT
 ```
@@ -116,7 +117,7 @@ Copy the address and private key over to the .env file:
 ```.env
 DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
-SATORI_RPC_URL=http://rpc.satori.vana.org
+SATORI_RPC_URL=https://rpc.satori.vana.org
 ```
 
 5. Deploy DataLiquidityPool and Token smart contracts. Make a note of 1. the DLP contract address and 2. the token contract address.
