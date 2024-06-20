@@ -57,7 +57,7 @@ restart_container() {
     --log-driver=gcplogs \
     --log-opt gcp-project="$PROJECT" \
     "$IMAGE"
-  docker prune -a -f > /dev/null 2>&1
+  docker system prune -a -f > /dev/null 2>&1
 }
 
 # Retrieve the metadata values using the function
