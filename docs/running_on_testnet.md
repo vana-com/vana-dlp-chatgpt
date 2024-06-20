@@ -111,7 +111,8 @@ yarn install
 4. Create an `.env` file for the smart contract repo. You will need the owner address and private key. 
 
 ```bash
-cat ~/.vana/wallets/owner/hotkeys/default
+jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
+jq -r '.privateKey' ~/.vana/wallets/owner/hotkeys/default
 ```
 Copy the address and private key over to the .env file: 
 ```.env
@@ -127,14 +128,15 @@ npx hardhat deploy --network satori --tags DLPDeploy
 
 6. Congratulations, you've deployed the DLP smart contracts! You can confirm they're up by searching the address for each on the block explorer: https://satori.vanascan.io/address/<address\>.
 
-7. In vana-dlp-chatgpt/.env, add an environment variable DLP_CONTRACT_ADDRESS=0x... and DLP_TOKEN_SATORI_CONTRACT=0x (replace with the deployed contract addresses).
+7. In `vana-dlp-chatgpt/.env`, add an environment variable `DLP_CONTRACT_ADDRESS=0x...` and `DLP_TOKEN_SATORI_CONTRACT=0x` (replace with the deployed contract addresses).
 
-8. Verify the contracts, so we can interact with them directly in the block explorer:
+8. If you made any changes to smart contracts code, verify the contracts, so you can interact with them directly in the block explorer:
 
 ```bash
 npx hardhat verify --network satori <data_liquidity_pool_address>
 npx hardhat verify --network satori <data_liquidity_pool_token_address> <owner_address>
 ```
+If you didn't make changes, contracts should be verified automatically. Ypu may need to wait a few minutes / refresh the page to see the verification status.
 
 ## Fund Validators
 
@@ -144,6 +146,7 @@ In order to register validators, they must have some of your DLP tokens to stake
 ./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4000_hotkey_address>
 ./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4001_hotkey_address>
 ```
+This will ask you for a transfer amount. You can transfer any amount of tokens, but for the purposes of this tutorial, you can transfer 10 tokens to each validator. That's the amount we will use for the stake at the next step.
 
 ## Register Validators
 
