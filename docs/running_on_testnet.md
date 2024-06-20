@@ -51,10 +51,9 @@ The owner will create and control the DLP.
 
 ```bash
 # Create a wallet for a the DLP owner
-vanacli wallet create
+vanacli wallet create --no_password
 > wallet name: owner
 > hotkey name: default
-> password: <password>
 ```
 
 It may take a moment to generate the wallet. Remember to save your mnemonic phrase.
@@ -63,16 +62,14 @@ Generate wallets for two validators you will run, too:
 
 ```bash
 # Create a wallet for a validator running on port 4000
-vanacli wallet create
+vanacli wallet create --no_password
 > wallet name: validator_4000
 > hotkey name: default
-> password: <password>
 
 # Create a wallet for a validator running on port 4001
-vanacli wallet create
+vanacli wallet create --no_password
 > wallet name: validator_4001
 > hotkey name: default
-> password: <password>
 ```
 
 ## Fund Wallets
