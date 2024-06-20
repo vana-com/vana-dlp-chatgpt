@@ -136,7 +136,7 @@ npx hardhat deploy --network satori --tags DLPDeploy
 npx hardhat verify --network satori <data_liquidity_pool_address>
 npx hardhat verify --network satori <data_liquidity_pool_token_address> <owner_address>
 ```
-If you didn't make changes, contracts should be verified automatically. Ypu may need to wait a few minutes / refresh the page to see the verification status.
+If you didn't make changes, contracts should be verified automatically. You may need to wait a few minutes / refresh the page to see the verification status.
 
 ## Fund Validators
 
