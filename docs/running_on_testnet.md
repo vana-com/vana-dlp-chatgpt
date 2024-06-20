@@ -88,11 +88,11 @@ Currency: DAT
 ```
 Note you can only use the faucet once per day. Use the testnet faucet available at https://faucet.vana.org to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
 
-Get your wallet address for all three accounts
+Get your wallet private keys for all three accounts and import them into metamask or another wallet of your choice.
 ```bash
-jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
-jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
-jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
+jq -r '.privateKey' ~/.vana/wallets/owner/hotkeys/default
+jq -r '.privateKey' ~/.vana/wallets/validator_4000/hotkeys/default
+jq -r '.privateKey' ~/.vana/wallets/validator_4001/hotkeys/default
 ```
 Now, send DAT from your metamask wallet to these three wallets. You are funding the hotkey wallets for use on the network.
 
@@ -126,6 +126,13 @@ SATORI_RPC_URL=https://rpc.satori.vana.org
 npx hardhat deploy --network satori --tags DLPDeploy
 ```
 
+You will get output that looks like this:
+```bash
+...
+DataLiquidityPoolToken deployed at: 0x...
+DataLiquidityPool deployed at: 0x...
+```
+
 6. Congratulations, you've deployed the DLP smart contracts! You can confirm they're up by searching the address for each on the block explorer: https://satori.vanascan.io/address/<address\>.
 
 7. In `vana-dlp-chatgpt/.env`, add an environment variable `DLP_CONTRACT_ADDRESS=0x...` and `DLP_TOKEN_SATORI_CONTRACT=0x` (replace with the deployed contract addresses).
@@ -140,13 +147,15 @@ If you didn't make changes, contracts should be verified automatically. You may 
 
 ## Fund Validators
 
-In order to register validators, they must have some of your DLP tokens to stake. You can import your owner wallet into metamask and send tokens to the validator wallets, or you can use the CLI:
+In order to register validators, they must have some of your DLP tokens to stake. You can import your owner wallet into metamask and send tokens to the validator wallets. 
+Use `DataLiquidityPoolToken` address to import your data liquidity pool tokens into metamask for your owner hotkey.
 
+Now transfer some tokens to the validators via metamask. For the purpose of this tutorial, you can transfer 10 tokens to each validator.
+You can get validator hotkey addresses by running the following commands:
 ```bash
-./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4000_hotkey_address>
-./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4001_hotkey_address>
+jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
+jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
 ```
-This will ask you for a transfer amount. You can transfer any amount of tokens, but for the purposes of this tutorial, you can transfer 10 tokens to each validator. That's the amount we will use for the stake at the next step.
 
 ## Register Validators
 
@@ -158,7 +167,6 @@ validators.
 ./vanacli dlp register_validator --wallet.name=validator_4000 --wallet.hotkey=default --stake_amount=10
 ./vanacli dlp register_validator --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=10
 ```
-
 These transactions must be accepted by calling the approveValidator function in the deployed smart contract.
 
 ## Approve Validators
