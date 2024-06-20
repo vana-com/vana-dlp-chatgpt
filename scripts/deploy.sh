@@ -16,9 +16,10 @@ IMAGE=${IMAGE:-vanaorg/dlp-chatgpt-validator}
 ZONE=${ZONE:-us-central1-a}
 DOPPLER_PROJECT=${DOPPLER_PROJECT:-prd}
 TAG=${TAG:-latest}
+RESTART="false"
 
 parse_args() {
-    while getopts "p:n:m:i:z:d:a:t:h" opt; do
+    while getopts "p:n:m:i:z:d:a:t:r:h" opt; do
         case $opt in
             p) PROJECT=$OPTARG ;;
             n) NUM_NODES=$OPTARG ;;
@@ -28,7 +29,8 @@ parse_args() {
             d) DOPPLER_PROJECT=$OPTARG ;;
             a) NAMESPACE=$OPTARG ;;
             t) TAG=$OPTARG ;;
-            h) echo "Usage: $0 [-p project] [-n num_nodes] [-m machine_type] [-i image] [-z zone] [-d doppler_project] [-a namespace]"; exit ;;
+            r) RESTART=true ;;
+            h) echo "Usage: $0 [-p project] [-n num_nodes] [-m machine_type] [-i image] [-z zone] [-d doppler_project] [-a namespace] [-r restart] "; exit ;;
             \?) echo "Invalid option: -$OPTARG. Use -h for help." >&2; exit 1 ;;
         esac
     done
@@ -69,7 +71,11 @@ for ((i=1; i<=NUM_NODES; i++)); do
       --zone="$ZONE" \
       --metadata project="$PROJECT",image="$IMAGE_TAG",env_base64="$ENV_BASE64" \
       --metadata-from-file startup-script=scripts/startup.sh
-
+      # If the flag is set, restart the VM to apply the changes
+      if [ "$RESTART" = "true" ]; then
+        gcloud compute instances stop "$VM_NAME" --project="$PROJECT" --zone="$ZONE"
+        gcloud compute instances start "$VM_NAME" --project="$PROJECT" --zone="$ZONE"
+      fi
     echo "Updated VM instance $VM_NAME"
   else
     # Create the VM instance if it doesn't exist
