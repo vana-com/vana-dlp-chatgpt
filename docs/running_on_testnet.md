@@ -93,8 +93,10 @@ Get your wallet private keys for all three accounts and import them into metamas
 jq -r '.privateKey' ~/.vana/wallets/owner/coldkey
 jq -r '.privateKey' ~/.vana/wallets/validator_4000/coldkey
 jq -r '.privateKey' ~/.vana/wallets/validator_4001/coldkey
+jq -r '.privateKey' ~/.vana/wallets/validator_4000/hotkeys/default
+jq -r '.privateKey' ~/.vana/wallets/validator_4001/hotkeys/default
 ```
-Now, send DAT from your metamask wallet to these three wallets. 
+Now, send DAT from your metamask wallet to these five wallets. 
 You are funding the coldkey wallets for use on the network.
 
 ## Deploy your own DLP smart contracts on Testnet
