@@ -51,10 +51,9 @@ The owner will create and control the DLP.
 
 ```bash
 # Create a wallet for a the DLP owner
-vanacli wallet create
+vanacli wallet create --no_password
 > wallet name: owner
 > hotkey name: default
-> password: <password>
 ```
 
 It may take a moment to generate the wallet. Remember to save your mnemonic phrase.
@@ -63,16 +62,14 @@ Generate wallets for two validators you will run, too:
 
 ```bash
 # Create a wallet for a validator running on port 4000
-vanacli wallet create
+vanacli wallet create --no_password
 > wallet name: validator_4000
 > hotkey name: default
-> password: <password>
 
 # Create a wallet for a validator running on port 4001
-vanacli wallet create
+vanacli wallet create --no_password
 > wallet name: validator_4001
 > hotkey name: default
-> password: <password>
 ```
 
 ## Fund Wallets
@@ -88,13 +85,16 @@ Currency: DAT
 ```
 Note you can only use the faucet once per day. Use the testnet faucet available at https://faucet.vana.org to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
 
-Get your wallet address for all three accounts
+Get your wallet private keys for all three accounts and import them into metamask or another wallet of your choice.
 ```bash
-jq -r '.address' ~/.vana/wallets/owner/hotkeys/default
-jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default
-jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default
+jq -r '.privateKey' ~/.vana/wallets/owner/coldkey
+jq -r '.privateKey' ~/.vana/wallets/validator_4000/coldkey
+jq -r '.privateKey' ~/.vana/wallets/validator_4001/coldkey
+jq -r '.privateKey' ~/.vana/wallets/validator_4000/hotkeys/default
+jq -r '.privateKey' ~/.vana/wallets/validator_4001/hotkeys/default
 ```
-Now, send DAT from your metamask wallet to these three wallets. You are funding the hotkey wallets for use on the network.
+Now, send DAT from your metamask wallet to these five wallets. 
+You are funding the coldkey wallets for use on the network.
 
 ## Deploy your own DLP smart contracts on Testnet
 
@@ -111,7 +111,8 @@ yarn install
 4. Create an `.env` file for the smart contract repo. You will need the owner address and private key. You can create a new key by following [the instructions on the README](https://github.com/vana-com/vana-dlp-chatgpt?tab=readme-ov-file#generate-validator-encryption-keys).
 
 ```bash
-cat ~/.vana/wallets/owner/hotkeys/default
+jq -r '.address' ~/.vana/wallets/owner/coldkey
+jq -r '.privateKey' ~/.vana/wallets/owner/coldkey
 ```
 Copy the address and private key over to the .env file: 
 ```.env
@@ -120,29 +121,43 @@ OWNER_ADDRESS=0x3....1
 SATORI_RPC_URL=https://rpc.satori.vana.org
 ```
 
-5. Deploy DataLiquidityPool and Token smart contracts. Make a note of 1. the DLP contract address and 2. the token contract address.
+5. Deploy DataLiquidityPool and Token smart contracts. Make a note of:
+   1. The DLP contract address. 
+   2. The token contract address.
 ```bash
 npx hardhat deploy --network satori --tags DLPDeploy
 ```
 
+You will get output that looks like this:
+```bash
+...
+DataLiquidityPoolToken deployed at: 0x...
+DataLiquidityPool deployed at: 0x...
+```
+
 6. Congratulations, you've deployed the DLP smart contracts! You can confirm they're up by searching the address for each on the block explorer: https://satori.vanascan.io/address/<address\>.
 
-7. In vana-dlp-chatgpt/.env, add an environment variable DLP_CONTRACT_ADDRESS=0x... and DLP_TOKEN_SATORI_CONTRACT=0x (replace with the deployed contract addresses).
+7. In `vana-dlp-chatgpt/.env`, add an environment variable `DLP_SATORI_CONTRACT=0x...` and `DLP_TOKEN_SATORI_CONTRACT=0x` (replace with the deployed contract addresses for `DataLiquidityPool` and `DataLiquidityPoolToken` respectively).
 
-8. Verify the contracts, so we can interact with them directly in the block explorer:
+8. Optional: If you made any changes to smart contracts code, verify the contracts, so you can interact with them directly in the block explorer:
 
 ```bash
 npx hardhat verify --network satori <data_liquidity_pool_address>
 npx hardhat verify --network satori <data_liquidity_pool_token_address> <owner_address>
 ```
+If you didn't make changes, contracts should be verified automatically. You may need to wait a few minutes / refresh the page to see the verification status.
 
-## Fund Validators
+## Fund Validators with DLP specific token
 
-In order to register validators, they must have some of your DLP tokens to stake. You can import your owner wallet into metamask and send tokens to the validator wallets, or you can use the CLI:
+In order to register validators, they must have some of your DLP tokens to stake. You can import your owner wallet into metamask and send tokens to the validator wallets. 
+Use `DataLiquidityPoolToken` address to import your data liquidity pool tokens into metamask for your DLP owner hotkey.
 
+Now transfer some DLP tokens from DLP owner hotkey to the validators coldkeys via metamask. 
+For the purpose of this tutorial, you can transfer 10 tokens to each validator.
+You can get validator coldkey addresses by running the following commands:
 ```bash
-./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4000_hotkey_address>
-./vanacli wallet transfer --chain.network satori --wallet.name owner --dest <validator_4001_hotkey_address>
+jq -r '.address' ~/.vana/wallets/validator_4000/coldkey
+jq -r '.address' ~/.vana/wallets/validator_4001/coldkey
 ```
 
 ## Register Validators
@@ -155,15 +170,14 @@ validators.
 ./vanacli dlp register_validator --wallet.name=validator_4000 --wallet.hotkey=default --stake_amount=10
 ./vanacli dlp register_validator --wallet.name=validator_4001 --wallet.hotkey=default --stake_amount=10
 ```
-
 These transactions must be accepted by calling the approveValidator function in the deployed smart contract.
 
 ## Approve Validators
 
 To approve the validators:
 ```bash
-./vanacli dlp approve_validator --wallet.name=owner --validator_address=<validator_4000_hotkey_address>
-./vanacli dlp approve_validator --wallet.name=owner --validator_address=<validator_4001_hotkey_address>
+./vanacli dlp approve_validator --wallet.name=owner --validator_address=$(jq -r '.address' ~/.vana/wallets/validator_4000/hotkeys/default)
+./vanacli dlp approve_validator --wallet.name=owner --validator_address=$(jq -r '.address' ~/.vana/wallets/validator_4001/hotkeys/default)
 ```
 
 Alternatively, you can approve validators through the explorer:
