@@ -76,7 +76,7 @@ vanacli wallet create --no_password
 
 First, fund your metamask or other evm-compatible wallet from the faucet so you have some funds to work with. 
 
-Add the Satori Testnet to your metamask wallet: 
+Add the Satori Testnet [network](https://support.metamask.io/networks-and-sidechains/managing-networks/how-to-add-a-custom-network-rpc/) to your metamask wallet: 
 ```bash
 Network name: Satori Testnet
 RPC URL: https://rpc.satori.vana.org
