@@ -44,6 +44,7 @@ class Validator(BaseNode):
 
     def __init__(self, config=None):
         super().__init__(config=config)
+        self.files_verified = []
 
         if self.wallet:
             self.node_client = vana.NodeClient(wallet=self.wallet)
@@ -70,8 +71,7 @@ class Validator(BaseNode):
                 f"Running validator {self.node_server} on network: {self.config.chain.chain_endpoint} with dlpuid: {self.config.dlpuid}"
             )
 
-    async def validate(self,
-                       message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
+    async def validate(self, message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
         """
         Proof of Contribution: Processes a validation request
         :param message: The validation message
@@ -83,80 +83,49 @@ class Validator(BaseNode):
     async def forward(self):
         """
         The forward function is called by the validator every time step.
-        It is responsible for querying the network and scoring the responses.
+        It is responsible for verifying files and reporting the results on-chain.
         """
         validator_hotkey = self.wallet.get_hotkey()
         validator_address = validator_hotkey.address
 
-        # TODO: this try-catch block was added mindlessly to prevent crashes and may need to be refactored
         try:
             # Get the next file to verify
-            get_next_file_to_verify_output = self.dlp_contract.functions.getNextFileToVerify(validator_address).call()
-            if get_next_file_to_verify_output is None:
-                vana.logging.error("No files to verify.")
-                return
-
-            file_id, input_url, input_encryption_key, added_time, assigned_validator = get_next_file_to_verify_output
-            if file_id == 0:
-                vana.logging.info("Received file_id 0. No files to verify. Sleeping for 5 seconds.")
+            get_next_file_to_verify_output = self.dlp_contract.functions.getNextFileToVerify().call()
+            if get_next_file_to_verify_output is None or get_next_file_to_verify_output[0] == 0:
+                vana.logging.info("No files to verify. Sleeping for 5 seconds.")
                 time.sleep(5)
                 return
 
-            vana.logging.debug(
-                f"Received file_id: {file_id}, input_url: {input_url}, input_encryption_key: {input_encryption_key}, added_time: {added_time}, assigned_validator: {assigned_validator}")
+            file_id, input_url, input_encryption_key, added_time = get_next_file_to_verify_output
 
-            # TODO: Define how the validator selects a which other validators to query, how often, etc.
-            node_servers = self.chain_manager.get_active_node_servers()
-            responses = await self.node_client.forward(
-                node_servers=node_servers,
-                message=chatgpt.protocol.ValidationMessage(
-                    input_url=input_url,
-                    input_encryption_key=input_encryption_key
-                ),
-                deserialize=False,
+            # Validate the file
+            validation_result = await self.validate(chatgpt.protocol.ValidationMessage(
+                input_url=input_url,
+                input_encryption_key=input_encryption_key
+            ))
+
+            # Report the score to the smart contract
+            verify_file_fn = self.dlp_contract.functions.verifyFile(
+                file_id,
+                as_wad(validation_result.output_file_score),
+                as_wad(validation_result.output_authenticity),
+                as_wad(validation_result.output_ownership),
+                as_wad(validation_result.output_quality),
+                as_wad(validation_result.output_uniqueness),
+                validation_result.metadata if hasattr(validation_result, 'metadata') else ""
             )
+            tx_receipt = self.chain_manager.send_transaction(verify_file_fn, self.wallet.hotkey)
+            block_number = tx_receipt[1].blockNumber
 
-            # TODO: Define how the validator scores responses, calculates rewards and updates the scores
-            vana.logging.info(f"Received responses: {responses}")
-
-            def majority_is_valid(results: list[chatgpt.protocol.ValidationMessage]) -> bool:
-                true_count = sum(1 for result in results if result.output_is_valid)
-                false_count = len(results) - true_count
-                return true_count > false_count
-
-            valid_scores = [output.output_file_score for output in responses if output.is_success]
-            mean_score = sum(valid_scores) / len(valid_scores) if valid_scores else 0
-            is_file_valid = majority_is_valid(responses)
-
-            def calculate_validator_score(output: chatgpt.protocol.ValidationMessage):
-                file_weight = 0.8
-                process_time_weight = 0.2
-
-                # TODO: use this validator's score as the reference instead of mean_score
-                file_score_part = 1 - abs(output.output_file_score - mean_score)
-                process_time_part = 1 - (
-                        output.node_client.process_time / output.timeout) if output.node_client.process_time else 0
-                process_time_part = max(0, min(1, process_time_part))
-                return file_weight * file_score_part + process_time_weight * process_time_part
-
-            metadata = {}
-            for response in responses:
-                metadata[response.node_server.hotkey] = {
-                    "output_is_valid": response.output_is_valid,
-                    "output_file_score": response.output_file_score
-                }
-                self.state.add_weight(response.node_server.hotkey, calculate_validator_score(response))
-
-            vana.logging.info(f"File is valid: {is_file_valid}, mean score: {mean_score}")
-
-            # Call verifyFile function on the DLP contract to set the file's score and metadata
-            verify_file_fn = self.dlp_contract.functions.verifyFile(file_id, as_wad(mean_score), f"{metadata}")
-            self.chain_manager.send_transaction(verify_file_fn, self.wallet.hotkey)
+            vana.logging.info(f"Verified file {file_id} with score {validation_result.output_file_score}, "
+                              f"authenticity {validation_result.output_authenticity}, "
+                              f"ownership {validation_result.output_ownership}, "
+                              f"quality {validation_result.output_quality}, "
+                              f"uniqueness {validation_result.output_uniqueness}")
 
         except Exception as e:
             vana.logging.error(f"Error during forward process: {e}")
             vana.logging.error(traceback.format_exc())
-            time.sleep(5)
 
     async def concurrent_forward(self):
         coroutines = [
