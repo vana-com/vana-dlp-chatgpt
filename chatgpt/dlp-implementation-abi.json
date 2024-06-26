@@ -90,6 +90,11 @@
   },
   {
     "inputs": [],
+    "name": "FileNotVerified",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidFileId",
     "type": "error"
   },
@@ -196,6 +201,16 @@
       }
     ],
     "name": "UUPSUnsupportedProxiableUUID",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ValidatorAlreadyVerified",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "VerificationDeadlineExceeded",
     "type": "error"
   },
   {
@@ -913,7 +928,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "addedTimestamp",
+            "name": "addedAt",
             "type": "uint256"
           },
           {
@@ -930,6 +945,11 @@
             "internalType": "uint256",
             "name": "verificationsCount",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isVerified",
+            "type": "bool"
           }
         ],
         "internalType": "struct IDataLiquidityPool.FileResponse",
@@ -1202,9 +1222,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "verificationId",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "validatorAddress",
+        "type": "address"
       }
     ],
     "name": "fileVerifications",
@@ -1218,12 +1238,37 @@
           },
           {
             "internalType": "uint256",
-            "name": "timespatmp",
+            "name": "reportedAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reportedAtBlock",
             "type": "uint256"
           },
           {
             "internalType": "uint256",
             "name": "score",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "authenticity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ownership",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "quality",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "uniqueness",
             "type": "uint256"
           },
           {
@@ -1274,7 +1319,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "addedTimestamp",
+            "name": "addedAt",
             "type": "uint256"
           },
           {
@@ -1291,6 +1336,11 @@
             "internalType": "uint256",
             "name": "verificationsCount",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isVerified",
+            "type": "bool"
           }
         ],
         "internalType": "struct IDataLiquidityPool.FileResponse",
@@ -1309,6 +1359,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getActiveValidators",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -1336,11 +1399,187 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getFileInfo",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "contributorAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "addedAt",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "verificationsCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isVerified",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "overallScore",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "authenticity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ownership",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "quality",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "uniqueness",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validatorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reportedAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reportedAtBlock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "score",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "authenticity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ownership",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "quality",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "uniqueness",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadata",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.FileVerificationInfo[]",
+        "name": "validatorScores",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "validatorAddress",
         "type": "address"
       }
     ],
+    "name": "getFileVerification",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "validatorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reportedAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "reportedAtBlock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "score",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "authenticity",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ownership",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "quality",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "uniqueness",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "metadata",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct IDataLiquidityPool.FileVerificationInfo",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getNextFileToVerify",
     "outputs": [
       {
@@ -1364,11 +1603,6 @@
             "internalType": "uint256",
             "name": "addedTime",
             "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "assignedValidator",
-            "type": "address"
           }
         ],
         "internalType": "struct IDataLiquidityPool.NextFileToVerify",
@@ -1528,6 +1762,19 @@
   },
   {
     "inputs": [],
+    "name": "lastAddedFileId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "masterKey",
     "outputs": [
       {
@@ -1555,6 +1802,19 @@
   {
     "inputs": [],
     "name": "minStakeAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextFileToVerifyId",
     "outputs": [
       {
         "internalType": "uint256",
@@ -2237,12 +2497,51 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "verifiedFiles",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "fileId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
         "name": "score",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "authenticity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ownership",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "quality",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "uniqueness",
         "type": "uint256"
       },
       {
