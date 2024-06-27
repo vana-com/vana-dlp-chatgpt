@@ -26,7 +26,7 @@ from chatgpt.utils.proof_of_contribution import proof_of_contribution
 from chatgpt.utils.validator import as_wad
 from dataclasses import dataclass, field
 from traceback import print_exception
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 
 
 @dataclass
@@ -38,54 +38,68 @@ class PeerScoringTask:
     processed_validators: List[str] = field(default_factory=list)
 
 
-def transform_tuple(data_tuple: tuple, field_names: list, from_wad: bool=False) -> dict:
+def transform_tuple(data_tuple: Tuple[Any, ...], field_specs: List[Tuple[str, bool]]) -> Dict[str, Any]:
     """
     Transforms a tuple of data into a dictionary with field names as keys.
-    Optionally divides numeric fields by 1e18 if divide_numeric is True.
+    Divides WAD fields by 1e18.
 
     :param data_tuple: tuple of data
-    :param field_names: list of field names
-    :param from_wad: bool indicating whether to divide numeric fields by 1e18
+    :param field_specs: list of tuples (field_name, is_wad)
     :return: dictionary of data
     """
     data_dict = {}
-    for name, value in zip(field_names, data_tuple):
-        if from_wad and isinstance(value, (int, float)):
+    for (name, is_wad), value in zip(field_specs, data_tuple):
+        if is_wad and isinstance(value, (int, float)):
             data_dict[name] = value / 1e18
         else:
             data_dict[name] = value
     return data_dict
 
-
-def transform_file_data(file_data_tuple: tuple) -> dict:
+def transform_file_data(file_data_tuple: Tuple[Any, ...]) -> Dict[str, Any]:
     """
     Transforms a tuple of file data into a dictionary with field names as keys.
-    Assumes numeric fields need to be converted from wei.
+    Converts WAD fields from wei.
 
     :param file_data_tuple: tuple of file data
     :return: dictionary of file data
     """
-    field_names = [
-        "fileId", "ownerAddress", "url", "encryptedKey", "addedTimestamp",
-        "addedAtBlock", "valid", "score", "authenticity", "ownership",
-        "quality", "uniqueness", "reward", "rewardWithdrawn", "verificationsCount"
+    field_specs = [
+        ("fileId", False),
+        ("ownerAddress", False),
+        ("url", False),
+        ("encryptedKey", False),
+        ("addedTimestamp", False),
+        ("addedAtBlock", False),
+        ("valid", False),
+        ("score", True),
+        ("authenticity", True),
+        ("ownership", True),
+        ("quality", True),
+        ("uniqueness", True),
+        ("reward", True),
+        ("rewardWithdrawn", False),
+        ("verificationsCount", False)
     ]
-    return transform_tuple(file_data_tuple, field_names, from_wad=True)
+    return transform_tuple(file_data_tuple, field_specs)
 
-
-def transform_file_score(file_score_tuple):
+def transform_file_score(file_score_tuple: Tuple[Any, ...]) -> Dict[str, Any]:
     """
     Transforms a tuple of file score data into a dictionary with field names as keys.
-    Assumes numeric fields need to be converted from wei.
+    Converts WAD fields from wei.
 
     :param file_score_tuple: tuple of file score data
     :return: dictionary of file score data
     """
-    field_names = [
-        "valid", "score", "reportedAtBlock", "authenticity",
-        "ownership", "quality", "uniqueness"
+    field_specs = [
+        ("valid", False),
+        ("score", True),
+        ("reportedAtBlock", False),
+        ("authenticity", True),
+        ("ownership", True),
+        ("quality", True),
+        ("uniqueness", True)
     ]
-    return transform_tuple(file_score_tuple, field_names, from_wad=True)
+    return transform_tuple(file_score_tuple, field_specs)
 
 
 class Validator(BaseNode):
