@@ -38,6 +38,33 @@ class PeerScoringTask:
     processed_validators: List[str] = field(default_factory=list)
 
 
+def transform_file_data(file_data_tuple: tuple) -> dict:
+    """
+    Transforms a tuple of file data into a dictionary with field names as keys
+    :param file_data_tuple: tuple of file data
+    :return: dictionary of file data
+    """
+    field_names = [
+        "fileId", "ownerAddress", "url", "encryptedKey", "addedTimestamp",
+        "addedAtBlock", "valid", "score", "authenticity", "ownership",
+        "quality", "uniqueness", "reward", "rewardWithdrawn", "verificationsCount"
+    ]
+    return dict(zip(field_names, file_data_tuple))
+
+
+def transform_file_score(file_score_tuple):
+    """
+    Transforms a tuple of file score data into a dictionary with field names as keys
+    :param file_score_tuple: tuple of file score data
+    :return: dictionary of file score data
+    """
+    field_names = [
+        "valid", "score", "reportedAtBlock", "authenticity",
+        "ownership", "quality", "uniqueness"
+    ]
+    return dict(zip(field_names, file_score_tuple))
+
+
 class Validator(BaseNode):
     """
     Base class for the Vana validators. Your validator should inherit from this class.
@@ -70,8 +97,8 @@ class Validator(BaseNode):
                 f"Running validator on network: {self.config.chain.chain_endpoint} with dlpuid: {self.config.dlpuid}"
             )
 
-            if 'needs_peer_scoring' not in self.state:
-                self.state['needs_peer_scoring'] = []
+            if not hasattr(self.state, 'needs_peer_scoring'):
+                setattr(self.state, 'needs_peer_scoring', [])
 
     def record_file_score(self, file_id: int, score_data: Dict[str, Any]):
         active_validators = self.get_active_validators()
@@ -84,7 +111,7 @@ class Validator(BaseNode):
             added_at_block=current_block
         )
 
-        self.state['needs_peer_scoring'].append(task)
+        self.state.needs_peer_scoring.append(task)
         self.state.save()
 
     def get_active_validators(self) -> List[str]:
@@ -95,18 +122,22 @@ class Validator(BaseNode):
         validator_scores = {}
         current_block = self.chain_manager.get_current_block()
 
-        for task in self.state['needs_peer_scoring'][:]:
-            file_data = self.chain_manager.read_contract_fn(self.dlp_contract.functions.files(task.file_id))
+        for task in self.state.needs_peer_scoring[:]:
+            file_data_tuple = self.chain_manager.read_contract_fn(self.dlp_contract.functions.files(task.file_id))
 
-            if not file_data:
+            if not file_data_tuple:
                 continue
+
+            file_data = transform_file_data(file_data_tuple)
 
             for validator in task.active_validators[:]:
                 if validator in task.processed_validators:
                     continue
 
-                validator_score = self.chain_manager.read_contract_fn(
-                    self.dlp_contract.functions.fileScores(task.file_id, validator))
+                file_score_tuple = self.chain_manager.read_contract_fn(
+                    self.dlp_contract.functions.fileScores(task.file_id, validator)
+                )
+                validator_score = transform_file_score(file_score_tuple)
 
                 if validator_score:
                     performance_score = self.score_validator_performance(task.own_submission, validator_score,
@@ -126,7 +157,7 @@ class Validator(BaseNode):
                     task.processed_validators.append(validator)
 
             if not task.active_validators:
-                self.state['needs_peer_scoring'].remove(task)
+                self.state.needs_peer_scoring.remove(task)
 
         self.update_validator_weights(validator_scores)
         self.state.save()
@@ -134,7 +165,7 @@ class Validator(BaseNode):
     def score_validator_performance(self, own_submission: Dict[str, Any], validator_score: Dict[str, Any],
                                     file_data: Dict[str, Any]) -> float:
         initial_weights = {
-            'overall_score': 50,
+            'score': 50,
             'authenticity': 10,
             'ownership': 10,
             'quality': 10,
@@ -148,16 +179,25 @@ class Validator(BaseNode):
 
         scores = {}
 
-        for dimension in ['overall_score', 'authenticity', 'ownership', 'quality', 'uniqueness']:
+        for dimension in ['score', 'authenticity', 'ownership', 'quality', 'uniqueness']:
             if dimension in own_submission and dimension in validator_score:
-                scores[dimension] = 1 - abs(own_submission[dimension] - validator_score[dimension]) / 100
+                scores[dimension] = 1 - abs(own_submission[dimension] - validator_score[dimension] / 1e18)
             else:
                 scores[dimension] = 0 if dimension in own_submission else 1
 
-        file_added_block = file_data['addedAtBlock']
-        max_block_difference = self.config.node.max_wait_blocks
-        block_difference = validator_score['reportedAtBlock'] - file_added_block
-        scores['speed'] = max(0, 1 - (block_difference / max_block_difference))
+        if 'addedAtBlock' in file_data and 'reportedAtBlock' in validator_score:
+            file_added_block = file_data['addedAtBlock']
+            reported_block = validator_score['reportedAtBlock']
+            max_block_difference = self.config.node.max_wait_blocks
+
+            if reported_block >= file_added_block:
+                block_difference = reported_block - file_added_block
+                scores['speed'] = max(0, 1 - (block_difference / max_block_difference))
+            else:
+                # This case shouldn't occur in normal circumstances
+                scores['speed'] = 0
+        else:
+            scores['speed'] = 0  # Default if we can't calculate
 
         return sum(weights[k] * scores[k] for k in weights)
 
@@ -189,13 +229,23 @@ class Validator(BaseNode):
                 await asyncio.sleep(5)
                 return
 
-            file_id, input_url, input_encryption_key, added_time, assigned_validator = next_file
+            # Unpack all values from next_file
+            (
+                file_id, owner_address, url, encrypted_key, added_timestamp,
+                added_at_block, valid, score, authenticity, ownership,
+                quality, uniqueness, reward, reward_withdrawn, verifications_count
+            ) = next_file
 
             vana.logging.debug(
-                f"Received file_id: {file_id}, input_url: {input_url}, input_encryption_key: {input_encryption_key}, "
-                f"added_time: {added_time}, assigned_validator: {assigned_validator}")
+                f"Received file_id: {file_id}, owner_address: {owner_address}, url: {url}, "
+                f"encrypted_key: {encrypted_key}, added_timestamp: {added_timestamp}, "
+                f"added_at_block: {added_at_block}, valid: {valid}, score: {score}, "
+                f"authenticity: {authenticity}, ownership: {ownership}, quality: {quality}, "
+                f"uniqueness: {uniqueness}, reward: {reward}, reward_withdrawn: {reward_withdrawn}, "
+                f"verifications_count: {verifications_count}"
+            )
 
-            contribution = await proof_of_contribution(file_id, input_url, input_encryption_key)
+            contribution = await proof_of_contribution(file_id, url, encrypted_key)
             vana.logging.info(f"File is valid: {contribution.is_valid}, file score: {contribution.score()}")
 
             # Call verifyFile function on the DLP contract to set the file's scores
@@ -213,7 +263,7 @@ class Validator(BaseNode):
             self.record_file_score(file_id, {
                 "score": contribution.score(),
                 "is_valid": contribution.is_valid,
-                "authenticity": contribution.scores.authenticity,
+                "authenticity": contribution.scores.authenticy,
                 "ownership": contribution.scores.ownership,
                 "quality": contribution.scores.quality,
                 "uniqueness": contribution.scores.uniqueness
