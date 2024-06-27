@@ -189,15 +189,11 @@ class Validator(BaseNode):
             file_added_block = file_data['addedAtBlock']
             reported_block = validator_score['reportedAtBlock']
             max_block_difference = self.config.node.max_wait_blocks
+            scores['speed'] = 0
 
             if reported_block >= file_added_block:
                 block_difference = reported_block - file_added_block
                 scores['speed'] = max(0, 1 - (block_difference / max_block_difference))
-            else:
-                # This case shouldn't occur in normal circumstances
-                scores['speed'] = 0
-        else:
-            scores['speed'] = 0  # Default if we can't calculate
 
         return sum(weights[k] * scores[k] for k in weights)
 
