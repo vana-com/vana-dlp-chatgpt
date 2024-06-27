@@ -38,9 +38,30 @@ class PeerScoringTask:
     processed_validators: List[str] = field(default_factory=list)
 
 
+def transform_tuple(data_tuple: tuple, field_names: list, from_wad: bool=False) -> dict:
+    """
+    Transforms a tuple of data into a dictionary with field names as keys.
+    Optionally divides numeric fields by 1e18 if divide_numeric is True.
+
+    :param data_tuple: tuple of data
+    :param field_names: list of field names
+    :param from_wad: bool indicating whether to divide numeric fields by 1e18
+    :return: dictionary of data
+    """
+    data_dict = {}
+    for name, value in zip(field_names, data_tuple):
+        if from_wad and isinstance(value, (int, float)):
+            data_dict[name] = value / 1e18
+        else:
+            data_dict[name] = value
+    return data_dict
+
+
 def transform_file_data(file_data_tuple: tuple) -> dict:
     """
-    Transforms a tuple of file data into a dictionary with field names as keys
+    Transforms a tuple of file data into a dictionary with field names as keys.
+    Assumes numeric fields need to be converted from wei.
+
     :param file_data_tuple: tuple of file data
     :return: dictionary of file data
     """
@@ -49,12 +70,14 @@ def transform_file_data(file_data_tuple: tuple) -> dict:
         "addedAtBlock", "valid", "score", "authenticity", "ownership",
         "quality", "uniqueness", "reward", "rewardWithdrawn", "verificationsCount"
     ]
-    return dict(zip(field_names, file_data_tuple))
+    return transform_tuple(file_data_tuple, field_names, from_wad=True)
 
 
 def transform_file_score(file_score_tuple):
     """
-    Transforms a tuple of file score data into a dictionary with field names as keys
+    Transforms a tuple of file score data into a dictionary with field names as keys.
+    Assumes numeric fields need to be converted from wei.
+
     :param file_score_tuple: tuple of file score data
     :return: dictionary of file score data
     """
@@ -62,7 +85,7 @@ def transform_file_score(file_score_tuple):
         "valid", "score", "reportedAtBlock", "authenticity",
         "ownership", "quality", "uniqueness"
     ]
-    return dict(zip(field_names, file_score_tuple))
+    return transform_tuple(file_score_tuple, field_names, from_wad=True)
 
 
 class Validator(BaseNode):
@@ -181,7 +204,7 @@ class Validator(BaseNode):
 
         for dimension in ['score', 'authenticity', 'ownership', 'quality', 'uniqueness']:
             if dimension in own_submission and dimension in validator_score:
-                scores[dimension] = 1 - abs(own_submission[dimension] - validator_score[dimension] / 1e18)
+                scores[dimension] = 1 - abs(own_submission[dimension] - validator_score[dimension])
             else:
                 scores[dimension] = 0 if dimension in own_submission else 1
 

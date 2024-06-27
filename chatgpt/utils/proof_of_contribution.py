@@ -21,9 +21,9 @@ async def proof_of_contribution(file_id: int, input_url: str, input_encryption_k
         contribution.scores.authenticity = proof_of_authenticity(decrypted_file_path)
         contribution.is_valid = all([
             contribution.scores.quality > 0.5,
-            contribution.scores.ownership > 0.5,
-            contribution.scores.uniqueness > 0.5,
-            contribution.scores.authenticity > 0.5
+            contribution.scores.ownership >= 0.0,
+            contribution.scores.uniqueness >= 0.0,
+            contribution.scores.authenticity >= 0.0
         ])
 
         # Clean up
