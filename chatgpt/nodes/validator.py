@@ -253,7 +253,7 @@ class Validator(BaseNode):
                 file_id,
                 contribution.is_valid,
                 as_wad(contribution.score()),
-                as_wad(contribution.scores.authenticy),
+                as_wad(contribution.scores.authenticity),
                 as_wad(contribution.scores.ownership),
                 as_wad(contribution.scores.quality),
                 as_wad(contribution.scores.uniqueness))

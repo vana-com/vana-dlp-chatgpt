@@ -1,10 +1,9 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class ScoreParts(BaseModel):
-    authenticy: Optional[float] = 0
+    authenticity: Optional[float] = 0
     ownership: Optional[float] = 0
     quality: Optional[float] = 0
     uniqueness: Optional[float] = 0
@@ -16,7 +15,7 @@ class Contribution(BaseModel):
     scores: ScoreParts = Field(default_factory=ScoreParts)
 
     def score(self):
-        return (0.1 * self.scores.authenticy +
-                0.2 * self.scores.ownership +
-                0.5 * self.scores.quality +
-                0.2 * self.scores.uniqueness)
+        return (0.0 * self.scores.authenticity +
+                0.0 * self.scores.ownership +
+                1.0 * self.scores.quality +  # We are currently only assessing quality
+                0.0 * self.scores.uniqueness)

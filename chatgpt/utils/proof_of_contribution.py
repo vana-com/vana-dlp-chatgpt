@@ -18,12 +18,12 @@ async def proof_of_contribution(file_id: int, input_url: str, input_encryption_k
         contribution.scores.quality = proof_of_quality(decrypted_file_path)
         contribution.scores.ownership = proof_of_ownership(decrypted_file_path)
         contribution.scores.uniqueness = proof_of_uniqueness(decrypted_file_path)
-        contribution.scores.authenticy = proof_of_authenticy(decrypted_file_path)
+        contribution.scores.authenticity = proof_of_authenticity(decrypted_file_path)
         contribution.is_valid = all([
             contribution.scores.quality > 0.5,
             contribution.scores.ownership > 0.5,
             contribution.scores.uniqueness > 0.5,
-            contribution.scores.authenticy > 0.5
+            contribution.scores.authenticity > 0.5
         ])
 
         # Clean up
@@ -90,7 +90,7 @@ def proof_of_quality(decrypted_file_path) -> float:
     except Exception as e:
         vana.logging.error(f"Error during validation, assuming file is invalid: {e}")
         vana.logging.error(traceback.format_exc())
-        return 0
+        return 0.0
 
 
 def proof_of_ownership(decrypted_file_path) -> float:
@@ -101,7 +101,7 @@ def proof_of_ownership(decrypted_file_path) -> float:
     """
     # TODO: Implement ownership check via sharing a chat with the user's wallet address,
     #  and scraping it to ensure the wallet owner owns the Zip file
-    return 1.0
+    return 0.0
 
 
 def proof_of_uniqueness(decrypted_file_path) -> float:
@@ -112,14 +112,14 @@ def proof_of_uniqueness(decrypted_file_path) -> float:
     """
     # TODO: Implement a similarity check to ensure the file is not a duplicate
     #  (or very similar) to a previously validated file
-    return 1.0
+    return 0.0
 
 
-def proof_of_authenticy(decrypted_file_path) -> float:
+def proof_of_authenticity(decrypted_file_path) -> float:
     """
     Check the authenticity of the decrypted file.
     :param decrypted_file_path:
     :return: authenticity score
     """
     # TODO: Implement a authenticity check to ensure it originated from chatgpt.com and is not tampered with.
-    return 1.0
+    return 0.0
