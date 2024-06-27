@@ -263,7 +263,7 @@ class Validator(BaseNode):
             self.record_file_score(file_id, {
                 "score": contribution.score(),
                 "is_valid": contribution.is_valid,
-                "authenticity": contribution.scores.authenticy,
+                "authenticity": contribution.scores.authenticity,
                 "ownership": contribution.scores.ownership,
                 "quality": contribution.scores.quality,
                 "uniqueness": contribution.scores.uniqueness
