@@ -129,6 +129,13 @@ def add_validator_args(cls, parser):
         default=1,
     )
 
+    parser.add_argument(
+        "--node.max_wait_blocks",
+        type=int,
+        help="The maximum number of blocks to wait for a validator to respond.",
+        default=100,
+    )
+
 
 def config(cls):
     """
