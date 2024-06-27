@@ -90,7 +90,7 @@ class Validator(BaseNode):
 
         try:
             # Get the next file to verify
-            get_next_file_to_verify_output = self.dlp_contract.functions.getNextFileToVerify().call()
+            get_next_file_to_verify_output = self.chain_manager.read_contract_fn(self.dlp_contract.functions.getNextFileToVerify())
             if get_next_file_to_verify_output is None or get_next_file_to_verify_output[0] == 0:
                 vana.logging.info("No files to verify. Sleeping for 5 seconds.")
                 time.sleep(5)
