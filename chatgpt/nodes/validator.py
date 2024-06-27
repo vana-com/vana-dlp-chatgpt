@@ -19,16 +19,15 @@ import argparse
 import asyncio
 import threading
 import traceback
-from traceback import print_exception
-from typing import Dict, List, Any
-from dataclasses import dataclass, field
-
-import chatgpt.protocol
 import vana
 from chatgpt.nodes.base_node import BaseNode
 from chatgpt.utils.config import add_validator_args
 from chatgpt.utils.proof_of_contribution import proof_of_contribution
 from chatgpt.utils.validator import as_wad
+from dataclasses import dataclass, field
+from traceback import print_exception
+from typing import Dict, List, Any
+
 
 @dataclass
 class PeerScoringTask:
@@ -37,6 +36,57 @@ class PeerScoringTask:
     own_submission: Dict[str, Any]
     added_at_block: int
     processed_validators: List[str] = field(default_factory=list)
+
+
+def transform_tuple(data_tuple: tuple, field_names: list, from_wad: bool=False) -> dict:
+    """
+    Transforms a tuple of data into a dictionary with field names as keys.
+    Optionally divides numeric fields by 1e18 if divide_numeric is True.
+
+    :param data_tuple: tuple of data
+    :param field_names: list of field names
+    :param from_wad: bool indicating whether to divide numeric fields by 1e18
+    :return: dictionary of data
+    """
+    data_dict = {}
+    for name, value in zip(field_names, data_tuple):
+        if from_wad and isinstance(value, (int, float)):
+            data_dict[name] = value / 1e18
+        else:
+            data_dict[name] = value
+    return data_dict
+
+
+def transform_file_data(file_data_tuple: tuple) -> dict:
+    """
+    Transforms a tuple of file data into a dictionary with field names as keys.
+    Assumes numeric fields need to be converted from wei.
+
+    :param file_data_tuple: tuple of file data
+    :return: dictionary of file data
+    """
+    field_names = [
+        "fileId", "ownerAddress", "url", "encryptedKey", "addedTimestamp",
+        "addedAtBlock", "valid", "score", "authenticity", "ownership",
+        "quality", "uniqueness", "reward", "rewardWithdrawn", "verificationsCount"
+    ]
+    return transform_tuple(file_data_tuple, field_names, from_wad=True)
+
+
+def transform_file_score(file_score_tuple):
+    """
+    Transforms a tuple of file score data into a dictionary with field names as keys.
+    Assumes numeric fields need to be converted from wei.
+
+    :param file_score_tuple: tuple of file score data
+    :return: dictionary of file score data
+    """
+    field_names = [
+        "valid", "score", "reportedAtBlock", "authenticity",
+        "ownership", "quality", "uniqueness"
+    ]
+    return transform_tuple(file_score_tuple, field_names, from_wad=True)
+
 
 class Validator(BaseNode):
     """
@@ -54,16 +104,8 @@ class Validator(BaseNode):
         super().__init__(config=config)
 
         if self.wallet:
-            self.node_client = vana.NodeClient(wallet=self.wallet)
-
             # Init sync with the network. Updates the state.
             self.sync()
-
-            # Serve NodeServer to enable external connections.
-            self.node_server = ((vana.NodeServer(wallet=self.wallet, config=self.config)
-                                 .attach(self.validate)
-                                 .serve(dlp_uid=self.config.dlpuid, chain_manager=self.chain_manager))
-                                .start())
 
             # Create asyncio event loop to manage async tasks.
             self.loop = asyncio.get_event_loop()
@@ -75,21 +117,11 @@ class Validator(BaseNode):
             self.lock = asyncio.Lock()
 
             vana.logging.info(
-                f"Running validator {self.node_server} on network: {self.config.chain.chain_endpoint} with dlpuid: {self.config.dlpuid}"
+                f"Running validator on network: {self.config.chain.chain_endpoint} with dlpuid: {self.config.dlpuid}"
             )
 
-            if 'needs_peer_scoring' not in self.state:
-                self.state['needs_peer_scoring'] = []
-
-    async def validate(self,
-                       message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
-        """
-        Proof of Contribution: Processes a validation request
-        :param message: The validation message
-        :return: The validation message with the output fields filled
-        """
-        vana.logging.info(f"Received {message.input_url} and encrypted key: {message.input_encryption_key}")
-        return await proof_of_contribution(message)
+            if not hasattr(self.state, 'needs_peer_scoring'):
+                setattr(self.state, 'needs_peer_scoring', [])
 
     def record_file_score(self, file_id: int, score_data: Dict[str, Any]):
         active_validators = self.get_active_validators()
@@ -102,38 +134,45 @@ class Validator(BaseNode):
             added_at_block=current_block
         )
 
-        self.state['needs_peer_scoring'].append(task)
+        self.state.needs_peer_scoring.append(task)
         self.state.save()
 
     def get_active_validators(self) -> List[str]:
-        validator_count = self.dlp_contract.functions.activeValidatorsListsCount().call()
-        return self.dlp_contract.functions.activeValidatorsLists(validator_count).call()
+        validator_count = self.chain_manager.read_contract_fn(self.dlp_contract.functions.activeValidatorsListsCount())
+        return self.chain_manager.read_contract_fn(self.dlp_contract.functions.activeValidatorsLists(validator_count))
 
     async def process_peer_scoring_queue(self):
         validator_scores = {}
         current_block = self.chain_manager.get_current_block()
 
-        for task in self.state['needs_peer_scoring'][:]:
-            file_data = self.dlp_contract.functions.files(task.file_id).call()
+        for task in self.state.needs_peer_scoring[:]:
+            file_data_tuple = self.chain_manager.read_contract_fn(self.dlp_contract.functions.files(task.file_id))
 
-            if not file_data:
+            if not file_data_tuple:
                 continue
+
+            file_data = transform_file_data(file_data_tuple)
 
             for validator in task.active_validators[:]:
                 if validator in task.processed_validators:
                     continue
 
-                validator_score = self.dlp_contract.functions.fileScores(task.file_id, validator).call()
+                file_score_tuple = self.chain_manager.read_contract_fn(
+                    self.dlp_contract.functions.fileScores(task.file_id, validator)
+                )
+                validator_score = transform_file_score(file_score_tuple)
 
                 if validator_score:
-                    performance_score = self.score_validator_performance(task.own_submission, validator_score, file_data)
+                    performance_score = self.score_validator_performance(task.own_submission, validator_score,
+                                                                         file_data)
                     if validator not in validator_scores:
                         validator_scores[validator] = []
                     validator_scores[validator].append(performance_score)
                     task.active_validators.remove(validator)
                     task.processed_validators.append(validator)
                 elif current_block - task.added_at_block >= self.config.node.max_wait_blocks:
-                    vana.logging.info(f"Validator {validator} did not respond in time for file {task.file_id}. Scoring 0.")
+                    vana.logging.info(
+                        f"Validator {validator} did not respond in time for file {task.file_id}. Scoring 0.")
                     if validator not in validator_scores:
                         validator_scores[validator] = []
                     validator_scores[validator].append(0)
@@ -141,14 +180,15 @@ class Validator(BaseNode):
                     task.processed_validators.append(validator)
 
             if not task.active_validators:
-                self.state['needs_peer_scoring'].remove(task)
+                self.state.needs_peer_scoring.remove(task)
 
         self.update_validator_weights(validator_scores)
         self.state.save()
 
-    def score_validator_performance(self, own_submission: Dict[str, Any], validator_score: Dict[str, Any], file_data: Dict[str, Any]) -> float:
+    def score_validator_performance(self, own_submission: Dict[str, Any], validator_score: Dict[str, Any],
+                                    file_data: Dict[str, Any]) -> float:
         initial_weights = {
-            'overall_score': 50,
+            'score': 50,
             'authenticity': 10,
             'ownership': 10,
             'quality': 10,
@@ -162,16 +202,21 @@ class Validator(BaseNode):
 
         scores = {}
 
-        for dimension in ['overall_score', 'authenticity', 'ownership', 'quality', 'uniqueness']:
+        for dimension in ['score', 'authenticity', 'ownership', 'quality', 'uniqueness']:
             if dimension in own_submission and dimension in validator_score:
-                scores[dimension] = 1 - abs(own_submission[dimension] - validator_score[dimension]) / 100
+                scores[dimension] = 1 - abs(own_submission[dimension] - validator_score[dimension])
             else:
                 scores[dimension] = 0 if dimension in own_submission else 1
 
-        file_added_block = file_data['addedAtBlock']
-        max_block_difference = self.config.node.max_wait_blocks
-        block_difference = validator_score['reportedAtBlock'] - file_added_block
-        scores['speed'] = max(0, 1 - (block_difference / max_block_difference))
+        if 'addedAtBlock' in file_data and 'reportedAtBlock' in validator_score:
+            file_added_block = file_data['addedAtBlock']
+            reported_block = validator_score['reportedAtBlock']
+            max_block_difference = self.config.node.max_wait_blocks
+            scores['speed'] = 0
+
+            if reported_block >= file_added_block:
+                block_difference = reported_block - file_added_block
+                scores['speed'] = max(0, 1 - (block_difference / max_block_difference))
 
         return sum(weights[k] * scores[k] for k in weights)
 
@@ -196,43 +241,51 @@ class Validator(BaseNode):
 
         try:
             # Get the next file to verify
-            next_file = self.dlp_contract.functions.getNextFileToVerify(validator_address).call()
+            get_next_file_to_verify_fn = self.dlp_contract.functions.getNextFileToVerify(validator_address)
+            next_file = self.chain_manager.read_contract_fn(get_next_file_to_verify_fn)
             if not next_file or next_file[0] == 0:
                 vana.logging.info("No files to verify. Sleeping for 5 seconds.")
                 await asyncio.sleep(5)
                 return
 
-            file_id, input_url, input_encryption_key, added_time, assigned_validator = next_file
+            # Unpack all values from next_file
+            (
+                file_id, owner_address, url, encrypted_key, added_timestamp,
+                added_at_block, valid, score, authenticity, ownership,
+                quality, uniqueness, reward, reward_withdrawn, verifications_count
+            ) = next_file
 
             vana.logging.debug(
-                f"Received file_id: {file_id}, input_url: {input_url}, input_encryption_key: {input_encryption_key}, added_time: {added_time}, assigned_validator: {assigned_validator}")
+                f"Received file_id: {file_id}, owner_address: {owner_address}, url: {url}, "
+                f"encrypted_key: {encrypted_key}, added_timestamp: {added_timestamp}, "
+                f"added_at_block: {added_at_block}, valid: {valid}, score: {score}, "
+                f"authenticity: {authenticity}, ownership: {ownership}, quality: {quality}, "
+                f"uniqueness: {uniqueness}, reward: {reward}, reward_withdrawn: {reward_withdrawn}, "
+                f"verifications_count: {verifications_count}"
+            )
 
-            # Perform validation
-            validation_result = await self.validate(chatgpt.protocol.ValidationMessage(
-                input_url=input_url,
-                input_encryption_key=input_encryption_key
-            ))
+            contribution = await proof_of_contribution(file_id, url, encrypted_key)
+            vana.logging.info(f"File is valid: {contribution.is_valid}, file score: {contribution.score()}")
 
-            # Call verifyFile function on the DLP contract to set the file's score
+            # Call verifyFile function on the DLP contract to set the file's scores
             verify_file_fn = self.dlp_contract.functions.verifyFile(
                 file_id,
-                validation_result.output_is_valid,
-                as_wad(validation_result.output_file_score),
-                as_wad(validation_result.output_authenticity_score),
-                as_wad(validation_result.output_ownership_score),
-                as_wad(validation_result.output_quality_score),
-                as_wad(validation_result.output_uniqueness_score)
-            )
+                contribution.is_valid,
+                as_wad(contribution.score()),
+                as_wad(contribution.scores.authenticity),
+                as_wad(contribution.scores.ownership),
+                as_wad(contribution.scores.quality),
+                as_wad(contribution.scores.uniqueness))
             self.chain_manager.send_transaction(verify_file_fn, self.wallet.hotkey)
 
             # Add this file to the peer scoring queue
             self.record_file_score(file_id, {
-                "score": validation_result.output_file_score,
-                "is_valid": validation_result.output_is_valid,
-                "authenticity": validation_result.output_authenticity_score,
-                "ownership": validation_result.output_ownership_score,
-                "quality": validation_result.output_quality_score,
-                "uniqueness": validation_result.output_uniqueness_score
+                "score": contribution.score(),
+                "is_valid": contribution.is_valid,
+                "authenticity": contribution.scores.authenticity,
+                "ownership": contribution.scores.ownership,
+                "quality": contribution.scores.quality,
+                "uniqueness": contribution.scores.uniqueness
             })
 
         except Exception as e:
@@ -259,24 +312,22 @@ class Validator(BaseNode):
         # This loop maintains the validator's operations until intentionally stopped.
         try:
             while True:
-                # TODO: this conditional was added mindlessly to prevent crashes and may need to be refactored
-                if self.chain_manager:
-                    vana.logging.info(f"step({self.step}) block({self.block})")
+                vana.logging.info(f"step({self.step}) block({self.block})")
 
-                    # Run multiple forwards concurrently.
-                    self.loop.run_until_complete(self.concurrent_forward())
+                # Run multiple forwards concurrently.
+                self.loop.run_until_complete(self.concurrent_forward())
 
-                    # Process peer scoring queue every tempo period
-                    current_block = self.chain_manager.get_current_block()
-                    if current_block % self.config.dlp.tempo == 0:
-                        self.loop.run_until_complete(self.process_peer_scoring_queue())
+                # Process peer scoring queue every tempo period
+                current_block = self.chain_manager.get_current_block()
+                if current_block % self.config.dlp.tempo == 0:
+                    self.loop.run_until_complete(self.process_peer_scoring_queue())
 
-                    # Check if we should exit.
-                    if self.should_exit:
-                        break
+                # Check if we should exit.
+                if self.should_exit:
+                    break
 
-                    # Sync metagraph and potentially set weights.
-                    self.sync()
+                # Sync state and potentially set weights.
+                self.sync()
 
                 self.step += 1
 
