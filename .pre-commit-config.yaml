@@ -3,7 +3,7 @@ repos:
   hooks:
   - id: pytest
     name: pytest
-    entry: poetry run pytest
+    entry: poetry run pytest --cov
     language: system
     pass_filenames: false
     always_run: true
