@@ -145,22 +145,23 @@ class BaseNode(ABC):
         """
         Wrapper for synchronizing the state of the network for the given miner or validator.
         """
-        current_block = self.block
-        if self.last_synced_block == current_block:
-            vana.logging.info(f"Sync already performed for block {current_block}. Skipping.")
-            return
+        if self.chain_manager:
+            current_block = self.block
+            if self.last_synced_block == current_block:
+                vana.logging.info(f"Sync already performed for block {current_block}. Skipping.")
+                return
 
-        self.last_synced_block = current_block
+            self.last_synced_block = current_block
 
-        # Ensure validator hotkey is still registered on the network.
-        self.check_registered()
+            # Ensure validator hotkey is still registered on the network.
+            self.check_registered()
 
-        if current_block % self.config.node.epoch_length == 0:
-            self.resync_state()
-            self.state.save()
+            if current_block % self.config.node.epoch_length == 0:
+                self.resync_state()
+                self.state.save()
 
-        if current_block % self.config.dlp.tempo == 0:
-            self.save_weights()
+            if current_block % self.config.dlp.tempo == 0:
+                self.save_weights()
 
     def save_weights(self):
         """
