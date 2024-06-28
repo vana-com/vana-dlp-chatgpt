@@ -1,35 +1,34 @@
+import base64
 import os
 import tempfile
 import traceback
+
+import gnupg
 import requests
 import vana
-import gnupg
-import base64
-import chatgpt.protocol
+from chatgpt.models.contribution import Contribution
 from chatgpt.utils.validator import evaluate_chatgpt_zip
 
 
-async def proof_of_contribution(message: chatgpt.protocol.ValidationMessage) -> chatgpt.protocol.ValidationMessage:
-    vana.logging.info(f"Received {message.input_url} and encrypted key: {message.input_encryption_key}")
+async def proof_of_contribution(file_id: int, input_url: str, input_encryption_key: str) -> Contribution:
+    contribution = Contribution(file_id=file_id, is_valid=False)
+    decrypted_file_path = download_and_decrypt_file(input_url, input_encryption_key)
 
-    decrypted_file_path = download_and_decrypt_file(message.input_url, message.input_encryption_key)
-
-    if decrypted_file_path is None:
-        message.output_is_valid = False
-        message.output_file_score = 0
-    else:
-        is_valid, file_score = proof_of_quality(decrypted_file_path)
-        message.output_is_valid = is_valid
-        message.output_file_score = file_score
-
-        proof_of_ownership(decrypted_file_path)
-        proof_of_uniqueness(decrypted_file_path)
+    if decrypted_file_path is not None:
+        contribution.scores.quality = proof_of_quality(decrypted_file_path)
+        contribution.scores.ownership = proof_of_ownership(decrypted_file_path)
+        contribution.scores.uniqueness = proof_of_uniqueness(decrypted_file_path)
+        contribution.scores.authenticity = proof_of_authenticity(decrypted_file_path)
+        contribution.is_valid = all([
+            contribution.scores.quality > 0.5,
+            contribution.scores.ownership >= 0.0,
+            contribution.scores.uniqueness >= 0.0,
+            contribution.scores.authenticity >= 0.0
+        ])
 
         # Clean up
-        os.remove(decrypted_file_path)  # Remove the decrypted file
-        vana.logging.info(f"Decrypted data removed from the node")
-
-    return message
+        os.remove(decrypted_file_path)
+    return contribution
 
 
 def download_and_decrypt_file(input_url, input_encryption_key):
@@ -79,46 +78,48 @@ def download_and_decrypt_file(input_url, input_encryption_key):
         return decrypted_file_path
 
 
-def proof_of_quality(decrypted_file_path):
+def proof_of_quality(decrypted_file_path) -> float:
     """
-    Validate the decrypted file.
+    Ensure the decrypted file is of high quality.
     :param decrypted_file_path:
-    :return:  is_valid, file_score
+    :return:  quality_score
     """
     try:
-        # Validate the decrypted file
         validation_result = evaluate_chatgpt_zip(decrypted_file_path)
-
-        vana.logging.info(f"Validation result: {validation_result}")
-
-        is_valid = validation_result["is_valid"]
-        file_score = validation_result["score"]
-
-        return is_valid, file_score
+        return validation_result["score"]
     except Exception as e:
         vana.logging.error(f"Error during validation, assuming file is invalid: {e}")
         vana.logging.error(traceback.format_exc())
-        return False, 0
+        return 0.0
 
 
-def proof_of_ownership(decrypted_file_path):
+def proof_of_ownership(decrypted_file_path) -> float:
     """
     Check the ownership of the decrypted file.
     :param decrypted_file_path:
-    :return:
+    :return: ownership score
     """
     # TODO: Implement ownership check via sharing a chat with the user's wallet address,
     #  and scraping it to ensure the wallet owner owns the Zip file
-    pass
+    return 0.0
 
 
-def proof_of_uniqueness(decrypted_file_path):
+def proof_of_uniqueness(decrypted_file_path) -> float:
     """
     Check the similarity of the decrypted file with previously validated files.
     :param decrypted_file_path:
-    :return:
+    :return: uniqueness score
     """
     # TODO: Implement a similarity check to ensure the file is not a duplicate
     #  (or very similar) to a previously validated file
-    pass
+    return 0.0
 
+
+def proof_of_authenticity(decrypted_file_path) -> float:
+    """
+    Check the authenticity of the decrypted file.
+    :param decrypted_file_path:
+    :return: authenticity score
+    """
+    # TODO: Implement a authenticity check to ensure it originated from chatgpt.com and is not tampered with.
+    return 0.0

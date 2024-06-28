@@ -5,6 +5,9 @@ description = ""
 authors = ["Tim Nunamaker <tim@vana.com>", "Volodymyr Isai <volod@vana.com>", "Kahtaf Alam <kahtaf@vana.com>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+setup = "setup:main"
+
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
 python-dotenv = "^1.0.1"
@@ -14,15 +17,19 @@ python-gnupg = "^0.5.2"
 requests = "^2.31.0"
 web3 = "^6.18.0"
 tiktoken = "^0.7.0"
-vana = "^0.5"
+vana = "^0.7"
 #vana = { path = "../vana-framework", develop = true }
 pynacl = "^1.5.0"
 scikit-learn = "^1.5.0"
 munch = "^4.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
 pytest-mock = "^3.14.0"
 pytest-asyncio = "^0.23.7"
-
+pre-commit = "^3.7.1"
+pytest-cov = "^5.0.0"
 
 [build-system]
 requires = ["poetry-core"]
