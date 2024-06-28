@@ -116,7 +116,7 @@ jq -r '.privateKey' ~/.vana/wallets/owner/coldkey
 ```
 Copy the address and private key over to the .env file. Customize the DLP name, token name, and token symbol as needed:
 ```.env
-DEPLOYER_PRIVATE_KEY=8...7
+DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
 SATORI_RPC_URL=https://rpc.satori.vana.org
 
