@@ -1,41 +1,92 @@
-import os
 import pytest
+from unittest.mock import Mock, patch, mock_open, call
 from chatgpt.utils.proof_of_contribution import proof_of_contribution, download_and_decrypt_file
-from pytest import MonkeyPatch
-from typing import Dict
-from unittest.mock import Mock
-
 
 @pytest.fixture
-def local_file():
-    return os.path.join(os.getcwd(), 'tests/data/chatgpt_5_conversations.zip')
-
+def mock_file_content():
+    return b'mocked_file_content'
 
 @pytest.fixture
-def onchain_file():
-    return {
-        'url': 'https://www.dropbox.com/scl/fi/v06k9rbw70d4ludr695c5/encrypted_chatgpt_1_conversation.zip?rlkey=z0sbrofptu7qmt58fggvwlqhd&dl=1',
-        'key': 'LS0tLS1CRUdJTiBQR1AgTUVTU0FHRS0tLS0tCgp3Y0RNQTVMUUhBZSt6M3BBQVF2L2ZwWEtXMHQ4U3U2cEs4VlhpL0VNc0VUTzYxTFBMbUlESkxmb21Kb1cKSnJ0b2JzckpabEVNMFdxUlRFaU94Z1JCaXJmaXozSFp0TDh5M3c2Tktaa2F5NDVKaFBsRzFsc0N4ci9wCmIyUm54UldwT3BuOHhhUS9mTUFQZFdySjNRcEljaVdjUE9wZDhSSngyOHVGcC9wL0x2azZlUjZCZlpzaApQWStUZzVCSk5EMGVxTi9ZWmlUd2ZVVnU0YU9pRUszenhhTlkwNkNzYTVsWm9MNnVaanVVRGRVOWlrQTQKZDFJd0szRnNkaVFLWlhORzdhcC82RzM4SW9yN3ZHd1dFeXlBWjlOV2Jta0lJTG5WSmZwZklDV2lwRmdCCmt4V0wrRzdHNksycUI1OU92b2V3UHJ3RDh2eVpMSE1GUmJBM09BNEtSaVRWdWcveFRjeXkxeEZJaUxpNgo4KzFOSzh2US9GUndESDRtdzVSVWVKWXJjcnkvUFZnWVdXRlBGLzdUM01yRDREOVBiTkxUSkhhVEwyaUgKM0dTeDFTM0pHUEVyMGNJTUhncDNMYlovdnprMzA0ek9QQ242VWVlWlJ0aThWbEtwYzFnV2hxdy9OZ0U0CjY2Z0JkN1hOM3l4MG5zbTZoVnlXM3VBeGUxczYwR2MrUmM3RG0zTHdEUmV1UlViZFBCUHEwclVCNzJCNQpLbkZCanh5VWoycmZEeHBmdnFwTEpDLzcyQW1NUkpxLzI4VHNCQXBlYnNFbWk4UU10QkI4MzdIRGxPS2oKVitBWjVIV2tDREVGRnNic1RZaU82UHQ2Q2FsVS9uOFVQbVlvOE16V3FQb2wzMUFvNGhTNHE1cFk0M25XClZTUVhYaEZXaGlVcFgyK3Vudm1iVEdIdHl3Z2htQXlxMC9RK004MFRyOHh6dkIrY3hkRWZxRkRDVXZkcQpiOHJ6YzVxZkRzZG41elIzcWN5ZmdqQS9Gb3ExaC9VWXZxMlBvYlFteHZveGFnQzJzOHR2c0Z0Sgo9ODlFRAotLS0tLUVORCBQR1AgTUVTU0FHRS0tLS0tCg==',
-    }
+def mock_decrypted_content():
+    return b'mocked_decrypted_content'
 
+@pytest.fixture
+def mock_encryption_key():
+    return 'bW9ja19lbmNyeXB0aW9uX2tleQ=='  # base64 encoded 'mock_encryption_key'
 
 @pytest.mark.asyncio
-async def test_proof_of_contribution(mocker: MonkeyPatch, local_file: str) -> None:
-    # Mock the decryption function and return our mocked file
-    mock_decrypt: Mock = mocker.patch('chatgpt.utils.proof_of_contribution.download_and_decrypt_file')
-    mock_decrypt.return_value = local_file
-    mock_os: Mock = mocker.patch('chatgpt.utils.proof_of_contribution.os.remove')
+@patch('chatgpt.utils.proof_of_contribution.download_and_decrypt_file')
+@patch('chatgpt.utils.proof_of_contribution.evaluate_chatgpt_zip')
+@patch('chatgpt.utils.proof_of_contribution.os.remove')
+async def test_proof_of_contribution(mock_remove, mock_evaluate, mock_download, mock_file_content):
+    mock_download.return_value = 'mock_file_path'
+    mock_evaluate.return_value = {
+        "score": 0.8,
+        "messages": ["Test message"],
+        "valid": True
+    }
 
-    contribution = await proof_of_contribution(file_id=1, input_url='url', input_encryption_key='key')
+    contribution = await proof_of_contribution(file_id=1, input_url='mock_url', input_encryption_key='mock_key')
 
     assert contribution.is_valid is True
-    assert contribution.scores.quality > 0.5
-    mock_decrypt.assert_called()
-    mock_os.assert_called()
+    assert contribution.scores.quality == 0.8
+    mock_download.assert_called_once_with('mock_url', 'mock_key')
+    mock_evaluate.assert_called_once_with('mock_file_path')
+    mock_remove.assert_called_once_with('mock_file_path')
 
+@patch.dict('os.environ', {'PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64': 'mock_private_key'})
+@patch('chatgpt.utils.proof_of_contribution.tempfile.mkdtemp')
+@patch('chatgpt.utils.proof_of_contribution.requests.get')
+@patch('chatgpt.utils.proof_of_contribution.gnupg.GPG')
+@patch('builtins.open', new_callable=mock_open)
+@patch('chatgpt.utils.proof_of_contribution.base64.b64decode')
+def test_download_and_decrypt_file(mock_b64decode, mock_open, mock_gpg, mock_get, mock_mkdtemp,
+                                   mock_file_content, mock_decrypted_content, mock_encryption_key):
+    # Set up mocks
+    mock_mkdtemp.return_value = '/mock/temp/dir'
+    mock_response = Mock(status_code=200, content=mock_file_content)
+    mock_get.return_value = mock_response
+    mock_gpg_instance = Mock()
+    mock_gpg_instance.decrypt.return_value = Mock(data=b'mock_symmetric_key')
+    mock_gpg_instance.decrypt_file.return_value = Mock(status='decryption ok', data=mock_decrypted_content)
+    mock_gpg.return_value = mock_gpg_instance
+    mock_b64decode.side_effect = [b'mock_encrypted_symmetric_key', b'mock_private_key_bytes']
 
-def test_download_and_decrypt_file(mocker: MonkeyPatch, onchain_file: Dict[str, str]) -> None:
-    decrypted_file_path = download_and_decrypt_file(input_url=onchain_file['url'],
-                                                    input_encryption_key=onchain_file['key'])
+    # Call the function
+    result = download_and_decrypt_file('mock_url', mock_encryption_key)
 
-    assert len(decrypted_file_path) > 0
+    # Assertions
+    assert result.endswith('decrypted_data.zip')
+    mock_get.assert_called_once_with('mock_url')
+    mock_gpg.assert_called_once()
+    mock_gpg_instance.import_keys.assert_called_once()
+    mock_gpg_instance.decrypt.assert_called_once()
+    mock_gpg_instance.decrypt_file.assert_called_once()
+    assert mock_b64decode.call_count == 2
+    mock_b64decode.assert_has_calls([
+        call(mock_encryption_key),
+        call('mock_private_key')
+    ])
+
+@patch.dict('os.environ', {})
+@patch('chatgpt.utils.proof_of_contribution.tempfile.mkdtemp')
+@patch('chatgpt.utils.proof_of_contribution.requests.get')
+@patch('builtins.open', new_callable=mock_open)
+@patch('chatgpt.utils.proof_of_contribution.base64.b64decode')
+def test_download_and_decrypt_file_missing_env_var(mock_b64decode, mock_open, mock_get, mock_mkdtemp,
+                                                   mock_file_content, mock_encryption_key):
+    # Set up mocks
+    mock_mkdtemp.return_value = '/mock/temp/dir'
+    mock_response = Mock(status_code=200, content=mock_file_content)
+    mock_get.return_value = mock_response
+    mock_b64decode.return_value = b'mock_encrypted_symmetric_key'
+
+    # Call the function and check for the exception
+    with pytest.raises(KeyError) as exc_info:
+        download_and_decrypt_file('mock_url', mock_encryption_key)
+
+    assert 'PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64' in str(exc_info.value)
+
+    # Assertions
+    mock_get.assert_called_once_with('mock_url')
+    mock_b64decode.assert_called_once_with(mock_encryption_key)
