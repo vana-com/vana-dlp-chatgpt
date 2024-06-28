@@ -20,10 +20,10 @@ import asyncio
 import threading
 import time
 import traceback
+import vana
 from traceback import print_exception
 
 import chatgpt.protocol
-import vana
 from chatgpt.nodes.base_node import BaseNode
 from chatgpt.utils.config import add_validator_args
 from chatgpt.utils.proof_of_contribution import proof_of_contribution
@@ -90,7 +90,8 @@ class Validator(BaseNode):
 
         try:
             # Get the next file to verify
-            get_next_file_to_verify_output = self.chain_manager.read_contract_fn(self.dlp_contract.functions.getNextFileToVerify())
+            get_next_file_to_verify_output = self.chain_manager.read_contract_fn(
+                self.dlp_contract.functions.getNextFileToVerify(validator_address))
             if get_next_file_to_verify_output is None or get_next_file_to_verify_output[0] == 0:
                 vana.logging.info("No files to verify. Sleeping for 5 seconds.")
                 time.sleep(5)
