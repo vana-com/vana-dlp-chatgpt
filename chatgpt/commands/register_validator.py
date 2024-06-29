@@ -56,6 +56,7 @@ class RegisterValidatorCommand(BaseCommand):
 
         # Step 2: Register the validator
         registration_fn = dlp_contract.functions.registerValidator(validator_address, validator_owner_address, stake_amount_wad)
+
         chain_manager.send_transaction(registration_fn, wallet.coldkey)
         vana.logging.info(f"Registered validator {validator_address} with owner {validator_owner_address} and staked {stake_amount} DLPTokens")
 

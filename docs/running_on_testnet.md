@@ -101,7 +101,7 @@ You are funding the coldkey wallets for use on the network.
 You're now ready to deploy a DLP smart contract, creating your own data DAO. You will then register two validators through the smart contract. The validators will be running proof of contribution. 
 
 1. Install hardhat: https://hardhat.org/hardhat-runner/docs/getting-started#installation
-2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts/tree/acdae3f4cf5b60426e779f5a3d220486d2a58b5a (this version is compatible with the latest vana-dlp-chatgpt)
+2. Clone the DLP Smart Contract Repo: https://github.com/vana-com/vana-dlp-smart-contracts/tree/b282a05176b9bbe61ceae5811e8f1dd3aee72a5a (this version is compatible with the latest vana-dlp-chatgpt)
 3. Install dependencies
 
 ```bash
@@ -114,11 +114,15 @@ yarn install
 jq -r '.address' ~/.vana/wallets/owner/coldkey
 jq -r '.privateKey' ~/.vana/wallets/owner/coldkey
 ```
-Copy the address and private key over to the .env file: 
+Copy the address and private key over to the .env file. Customize the DLP name, token name, and token symbol as needed:
 ```.env
 DEPLOYER_PRIVATE_KEY=0x8...7
 OWNER_ADDRESS=0x3....1
 SATORI_RPC_URL=https://rpc.satori.vana.org
+
+DLP_NAME=Custom Data Liquidity Pool
+DLP_TOKEN_NAME=Custom Data Autonomy Token
+DLP_TOKEN_SYMBOL=CUSTOMDAT
 ```
 
 5. Deploy DataLiquidityPool and Token smart contracts. Make a note of:
@@ -143,14 +147,14 @@ DataLiquidityPool deployed at: 0x...
 
 ```bash
 npx hardhat verify --network satori <data_liquidity_pool_address>
-npx hardhat verify --network satori <data_liquidity_pool_token_address> <owner_address>
+npx hardhat verify --network satori <data_liquidity_pool_token_address> "<token_name>" <token_symbol> <owner_address>
 ```
-If you didn't make changes, contracts should be verified automatically. You may need to wait a few minutes / refresh the page to see the verification status.
+If you didn't make changes, contracts should be verified automatically. You may need to wait a few minutes / refresh the page to see the verification status. If you get an error, it may be because the block explorer has already verified matching bytecode. Check your contract in the block explorer. If it is verified, you can ignore the error.
 
 ## Fund Validators with DLP specific token
 
 In order to register validators, they must have some of your DLP tokens to stake. You can import your owner wallet into metamask and send tokens to the validator wallets. 
-Use `DataLiquidityPoolToken` address to import your data liquidity pool tokens into metamask for your DLP owner hotkey.
+Use `<data_liquidity_pool_token_address>` to import your data liquidity pool tokens into metamask for your DLP owner hotkey.
 
 Now transfer some DLP tokens from DLP owner hotkey to the validators coldkeys via metamask. 
 For the purpose of this tutorial, you can transfer 10 tokens to each validator.
@@ -208,12 +212,9 @@ poetry run python -m chatgpt.nodes.validator --node_server.external_ip=127.0.0.1
 
 # Running a validator on an existing DLP
 
-In order to run a validator for an existing DLP, you will need to request a few things from the DLP owner:
+In order to run a validator for an existing DLP, you will need to request the private decryption key for the DLP validator network.
 
-* The private Redis credentials for the DLP validator network
-* The private decryption key for the DLP validator network
-
-Once you have these, you can set up your validator node. Get started with [the above instructions for DLP creators](#get-started), skipping the steps for deploying the smart contract.
+Once you have the private key, you can set up your validator node. Get started with [the above instructions for DLP creators](#get-started), skipping the steps for deploying the smart contract.
 
 The basic steps are:
 

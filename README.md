@@ -35,6 +35,7 @@ git clone https://github.com/vana-com/vana-dlp-chatgpt.git
 2. Install the required dependencies using poetry:
 ```shell
 poetry install
+poetry run setup
 ```
 3. Configure the environment variables by copying and modifying the `.env.example` file:
 
