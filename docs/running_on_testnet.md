@@ -147,7 +147,7 @@ DataLiquidityPool deployed at: 0x...
 
 ```bash
 npx hardhat verify --network satori <data_liquidity_pool_address>
-npx hardhat verify --network satori <data_liquidity_pool_token_address> <owner_address>
+npx hardhat verify --network satori <data_liquidity_pool_token_address> "<token_name>" <token_symbol> <owner_address>
 ```
 If you didn't make changes, contracts should be verified automatically. You may need to wait a few minutes / refresh the page to see the verification status. If you get an error, it may be because the block explorer has already verified matching bytecode. Check your contract in the block explorer. If it is verified, you can ignore the error.
 
