@@ -18,10 +18,10 @@
 import copy
 import json
 import os
+import vana
 from abc import ABC, abstractmethod
 
 import chatgpt
-import vana
 from chatgpt.utils.config import check_config, add_args, config
 from chatgpt.utils.misc import ttl_get_block
 from chatgpt.utils.validator import as_wad
@@ -145,22 +145,23 @@ class BaseNode(ABC):
         """
         Wrapper for synchronizing the state of the network for the given miner or validator.
         """
-        current_block = self.block
-        if self.last_synced_block == current_block:
-            vana.logging.info(f"Sync already performed for block {current_block}. Skipping.")
-            return
+        if self.chain_manager:
+            current_block = self.block
+            if self.last_synced_block == current_block:
+                vana.logging.info(f"Sync already performed for block {current_block}. Skipping.")
+                return
 
-        self.last_synced_block = current_block
+            self.last_synced_block = current_block
 
-        # Ensure validator hotkey is still registered on the network.
-        self.check_registered()
+            # Ensure validator hotkey is still registered on the network.
+            self.check_registered()
 
-        if current_block % self.config.node.epoch_length == 0:
-            self.resync_state()
-            self.state.save()
+            if current_block % self.config.node.epoch_length == 0:
+                self.resync_state()
+                self.state.save()
 
-        if current_block % self.config.dlp.tempo == 0:
-            self.save_weights()
+            if current_block % self.config.dlp.tempo == 0:
+                self.save_weights()
 
     def save_weights(self):
         """
@@ -175,9 +176,9 @@ class BaseNode(ABC):
         self.chain_manager.send_transaction(update_weights_fn, self.wallet.hotkey)
 
     def check_registered(self):
-        validator_count = self.dlp_contract.functions.activeValidatorsListsCount().call()
-        active_validator_addresses: list[str] = self.dlp_contract.functions.activeValidatorsLists(
-            validator_count).call()
+        validator_count = self.chain_manager.read_contract_fn(self.dlp_contract.functions.activeValidatorsListsCount())
+        active_validator_addresses: list[str] = self.chain_manager.read_contract_fn(
+            self.dlp_contract.functions.activeValidatorsLists(validator_count))
         self.state.set_hotkeys(active_validator_addresses)
 
         if not active_validator_addresses.__contains__(self.wallet.hotkey.address):

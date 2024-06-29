@@ -50,8 +50,17 @@ class ValidationMessage(vana.Message):
 
     output_file_score: typing.Optional[float] = 0.0
 
+    output_authenticity: typing.Optional[float] = 0.0
+    output_ownership: typing.Optional[float] = 0.0
+    output_quality: typing.Optional[float] = 0.0
+    output_uniqueness: typing.Optional[float] = 0.0
+
     def deserialize(self) -> dict:
         return {
             "output_is_valid": self.output_is_valid,
             "output_file_score": self.output_file_score,
+            "output_authenticity": self.output_authenticity,
+            "output_ownership": self.output_ownership,
+            "output_quality": self.output_quality,
+            "output_uniqueness": self.output_uniqueness,
         }

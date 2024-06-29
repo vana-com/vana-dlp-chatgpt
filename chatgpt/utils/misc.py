@@ -106,4 +106,4 @@ def ttl_get_block(self) -> int:
 
     Note: self here is the miner or validator instance
     """
-    return self.chain_manager.get_current_block()
+    return self.chain_manager.get_current_block() if self.chain_manager else 0
