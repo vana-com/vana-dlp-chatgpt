@@ -44,6 +44,7 @@ restart_container() {
   log "Stopping current Docker container..."
   docker stop validator || true
   docker rm validator || true
+  docker system prune -a -f > /dev/null 2>&1
   log "Pulling new Docker image..."
   docker pull "$IMAGE"
   log "Starting new Docker container..."
@@ -57,7 +58,6 @@ restart_container() {
     --log-driver=gcplogs \
     --log-opt gcp-project="$PROJECT" \
     "$IMAGE"
-  docker system prune -a -f > /dev/null 2>&1
 }
 
 # Retrieve the metadata values using the function
