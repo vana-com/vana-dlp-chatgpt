@@ -141,15 +141,26 @@ DataLiquidityPool deployed at: 0x...
 
 6. Congratulations, you've deployed the DLP smart contracts! You can confirm they're up by searching the address for each on the block explorer: https://satori.vanascan.io/address/<address\>.
 
-7. In `vana-dlp-chatgpt/.env`, add an environment variable `DLP_SATORI_CONTRACT=0x...` and `DLP_TOKEN_SATORI_CONTRACT=0x` (replace with the deployed contract addresses for `DataLiquidityPool` and `DataLiquidityPoolToken` respectively).
-
-8. Optional: If you made any changes to smart contracts code, verify the contracts, so you can interact with them directly in the block explorer:
+7. Optional: If you made any changes to smart contracts code, verify the contracts, so you can interact with them directly in the block explorer:
 
 ```bash
 npx hardhat verify --network satori <data_liquidity_pool_address>
 npx hardhat verify --network satori <data_liquidity_pool_token_address> "<token_name>" <token_symbol> <owner_address>
 ```
 If you didn't make changes, contracts should be verified automatically. You may need to wait a few minutes / refresh the page to see the verification status. If you get an error, it may be because the block explorer has already verified matching bytecode. Check your contract in the block explorer. If it is verified, you can ignore the error.
+
+8. Configure the deployed DLP contract:
+   1. Visit the Satori block explorer: https://satori.vanascan.io/address/<contract_address>
+   2. Go to the "Write proxy" tab
+   3. Connect your wallet (make sure it's the owner wallet used for deployment)
+   4. Set the following parameters:
+      - Call `updateFileRewardDelay` and set it to 0
+      - Call `addRewardsForContributors` with a large value (e.g., 1000000000000000000000000 for 1 million tokens)
+   5. For each function call, confirm the transaction in your wallet
+
+   These steps ensure that rewards can be claimed immediately and that there are sufficient tokens allocated for rewards.
+
+9. In `vana-dlp-chatgpt/.env`, add an environment variable `DLP_SATORI_CONTRACT=0x...` and `DLP_TOKEN_SATORI_CONTRACT=0x` (replace with the deployed contract addresses for `DataLiquidityPool` and `DataLiquidityPoolToken` respectively).
 
 ## Fund Validators with DLP specific token
 
