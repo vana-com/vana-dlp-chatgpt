@@ -3,9 +3,7 @@
 This tutorial introduces the concept of data liquidity pools and proof of contribution by having you create your own data liquidity pool and validators. It is based on the standard [smart contract template](https://github.com/vana-com/vana-dlp-smart-contracts/tree/2ada9aac3a54dc193903fb4d0e0886bfe7c92e1f) and [validator template](https://github.com/vana-com/vana-dlp-chatgpt), and will take about 1 hour to get setup. You will:
 - Deploy a data liquidity pool smart contract
 - Register validators to run proof of contribution, ensuring chatGPT data quality
-- Submit chatGPT data to test that proof of contribution is working
-
-Note that you will not be rewarded in GPTDAT - this testnet tutorial just writes scores onchain, but does not yet support claiming GPTDAT. 
+- Submit ChatGPT data to test that proof of contribution is working
 
 By continuing in this tutorial, you agree to the following
 - The testnet is provided solely on an “as is” and “as available” basis for experimental purposes. The functionality of the testnet remains experimental and has not undergone comprehensive testing.
@@ -219,7 +217,8 @@ poetry run python -m chatgpt.nodes.validator --node_server.external_ip=127.0.0.1
     - Click on the gear icon to edit the DLP contract address and public part of the encryption key in the UI to match the deployed contract address and public key.
     - In the console logs, we will see the uploaded file URL and the encryption key.
 - Paste the URL and encryption key in the `addFile` function in the deployed smart contract: https://satori.vanascan.io/address/<deployed_contract_address>?tab=write_contract
-- Your validator should pick up the files, and write the file scores back on chain
+- Your validator should pick up the files, and write the file scores back on chain with a `verifyFile` transaction.
+- A few moments later, the UI should present you with the option to claim your rewards.
 
 # Running a validator on an existing DLP
 
@@ -229,13 +228,14 @@ Once you have the private key, you can set up your validator node. Get started w
 
 The basic steps are:
 
-1. Install the Vana CLI with `pip install vana`
-2. Create one wallet with `vanacli wallet create`.
-3. Fund the **hotkey** address of your wallet with some of the DLP's tokens. You can ask the DLP creator to send you some tokens.
-4. Submit a validator registration transaction: `./vanacli dlp register_validator --wallet.name=validator_4000 --stake_amount 10`.
-5. Ask the DLP owner to accept your registration request.
-6. Run your validator node: `poetry run python -m chatgpt.nodes.validator --node_server.external_ip=127.0.0.1 --node_server.port=4000 --wallet.name=validator_4000`
-7. Add a file to the DLP and watch your validator node score it! ([instructions above](#send-addfile-transaction))
+1. Get the private key for the validator network.
+2. Install the Vana CLI with `pip install vana`
+3. Create one wallet with `vanacli wallet create`.
+4. Fund the **hotkey** address of your wallet with some of the DLP's tokens. You can ask the DLP creator to send you some tokens.
+5. Submit a validator registration transaction: `./vanacli dlp register_validator --wallet.name=validator_4000 --stake_amount 10`.
+6. Ask the DLP owner to accept your registration request.
+7. Run your validator node: `poetry run python -m chatgpt.nodes.validator --node_server.external_ip=127.0.0.1 --node_server.port=4000 --wallet.name=validator_4000`
+8. Add a file to the DLP and watch your validator node score it! ([instructions above](#send-addfile-transaction))
 
 > Note: if the DLP has been heavily modified from the starter template, you may not be able to register a validator with the CLI. In this case, you can register it through the [Satori explorer](https://satori.vanascan.io/).
 > 1. Import your hotkey into a browser-compatible wallet like MetaMask.
