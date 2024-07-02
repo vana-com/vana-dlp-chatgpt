@@ -10,7 +10,7 @@ source "$(dirname "$0")/env.sh"
 DEFAULT_NAMESPACE=satori-hotdog
 
 PROJECT=${PROJECT:-corsali-production}
-NUM_NODES=${NUM_NODES:-3}
+NUM_NODES=${NUM_NODES:-1}
 MACHINE_TYPE=${MACHINE_TYPE:-n1-standard-1}
 IMAGE=${IMAGE:-vanaorg/dlp-chatgpt-validator}
 ZONE=${ZONE:-us-central1-a}
