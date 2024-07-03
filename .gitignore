@@ -161,3 +161,8 @@ cython_debug/
 
 # Temporary file used to communicate with a validator via API
 cli.json
+
+public_key.asc
+public_key_base64.asc
+private_key.asc
+private_key_base64.asc

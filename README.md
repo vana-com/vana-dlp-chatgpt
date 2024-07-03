@@ -25,11 +25,11 @@ Local: 1 CPU, 8GB RAM, 10GB free disk space
 AWS: t3.large, m5.large or better  
 GCP: n1-standard-2 or better  
 
-To get started with the ChatGPT DLP, follow these steps:
+To get started with the Hot Dog DLP, follow these steps:
 
 1. Clone the repository:
 ```shell
-git clone https://github.com/vana-com/vana-dlp-chatgpt.git
+git clone https://github.com/vana-com/vana-dlp-hotdog.git
 ```
 
 2. Install the required dependencies using poetry:
@@ -41,43 +41,28 @@ poetry run setup
 
 4. Run the application:
 ```shell
-poetry run python -m chatgpt.nodes.validator
+poetry run python -m hotdog.nodes.validator
 ```
 
 ## Generate validator encryption keys
-All DLP validators share a private/public keypair to encrypt the user's encryption keys. To generate a new keypair, follow these steps:
-1. Install GnuPG:
-```bash
-sudo apt-get install gnupg
-```
 
-2. Generate a new key pair and follow the prompts:
-```bash
-gpg --full-generate-key
+To generate the encryption keypair for DLP validators:
 
-Select the key type (RSA and RSA).
-Specify the key size (3072 bits).
-Set the key expiration time (no expiration).
-Enter your name and email address.
-Choose a passphrase to protect your private key.
-```
+1. Run the keygen script:
+    ```bash
+    ./keygen.sh
+    ```
 
-3. Export the Private Key - this is what validators will use to decrypt the files:
-```bash
-gpg --export-secret-keys --armor your_email@example.com > private_key.asc
-```
+2. Follow the prompts to enter your name, email, and key expiration.
 
-4. Export the Public Key - this is what the UI will use to encrypt the user's symmetric file encryption key
-```bash
-gpg --export --armor your_email@example.com > public_key.asc
-```
+3. The script generates four files:
+    - `public_key.asc` and `public_key_base64.asc` (for UI)
+    - `private_key.asc` and `private_key_base64.asc` (for validators)
 
-5. Base64 encode the private key, and paste it into vana-dlp-chatgpt/.env under `PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64`
-```bash
-base64 -i private_key.asc > private_key_base64.asc
-```
+4. Copy the contents of `private_key_base64.asc` to `vana-dlp-hotdog/.env` under `PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64`.
 
-7. Paste the public key into the [DLP Demo UI](https://dlp-ui.vercel.vana.com/claim/upload) (settings icon on the top right)
+5. Paste the public key into the [DLP Demo UI](https://dlp-ui.vercel.vana.com/claim/upload) (settings icon on the top right)
+
 ## Using the CLI
 The Vana command line interface (`vanacli`) is the primary command line tool for interacting with the Vana network.
 It can be used to deploy nodes, manage wallets, stake/unstake, nominate, transfer tokens, and more.

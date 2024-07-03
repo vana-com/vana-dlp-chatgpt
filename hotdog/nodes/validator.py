@@ -20,10 +20,10 @@ import asyncio
 import threading
 import traceback
 import vana
-from chatgpt.nodes.base_node import BaseNode
-from chatgpt.utils.config import add_validator_args
-from chatgpt.utils.proof_of_contribution import proof_of_contribution
-from chatgpt.utils.validator import as_wad
+from hotdog.nodes.base_node import BaseNode
+from hotdog.utils.config import add_validator_args
+from hotdog.utils.proof_of_contribution import proof_of_contribution
+from hotdog.utils.validator import as_wad
 from dataclasses import dataclass, field
 from traceback import print_exception
 from typing import Dict, List, Any, Tuple

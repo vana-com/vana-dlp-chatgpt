@@ -2,7 +2,7 @@ import argparse
 import json
 
 import vana
-from chatgpt.nodes.base_node import BaseNode
+from hotdog.nodes.base_node import BaseNode
 from rich.prompt import Prompt
 from vana.commands.base_command import BaseCommand
 

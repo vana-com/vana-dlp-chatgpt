@@ -15,56 +15,20 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-"""
-Contains the Pydantic models for the ChatGPT JSON data structure
-"""
-from typing import List, Dict, Optional, Any
 
-from pydantic import BaseModel
-
-
-class Author(BaseModel):
-    role: str
-    name: Optional[str]
-    metadata: Dict
+def as_wad(num: float = 0) -> int:
+    """
+    Convert a number to its equivalent in wei.
+    :param num:
+    :return:
+    """
+    return int(num * 1e18)
 
 
-class Content(BaseModel):
-    content_type: str
-    parts: Optional[List[Any]] = None
-
-
-class Message(BaseModel):
-    id: str
-    author: Author
-    create_time: float | None
-    update_time: float | None
-    content: Content
-    status: str
-    end_turn: bool | None
-    weight: float
-    metadata: dict
-    recipient: str
-
-
-class Node(BaseModel):
-    id: str
-    message: Optional[Message]
-    parent: Optional[str]
-    children: List[str]
-
-
-class ChatGPTData(BaseModel):
-    title: str | None
-    create_time: float
-    update_time: float
-    mapping: dict[str, Node]
-    moderation_results: List
-    current_node: str
-    plugin_ids: List | None
-    conversation_id: str
-    conversation_template_id: str | None
-    gizmo_id: str | None
-    is_archived: bool
-    safe_urls: List
-    id: str
+def from_wad(num: int = 0) -> float:
+    """
+    Convert a number from wei to its equivalent.
+    :param num:
+    :return:
+    """
+    return num / 1e18

@@ -21,10 +21,10 @@ import os
 import vana
 from abc import ABC, abstractmethod
 
-import chatgpt
-from chatgpt.utils.config import check_config, add_args, config
-from chatgpt.utils.misc import ttl_get_block
-from chatgpt.utils.validator import as_wad
+import hotdog
+from hotdog.utils.config import check_config, add_args, config
+from hotdog.utils.misc import ttl_get_block
+from hotdog.utils.validator import as_wad
 
 
 class BaseNode(ABC):
@@ -205,11 +205,11 @@ class BaseNode(ABC):
             return None
 
         if network == "vana":
-            return chatgpt.__dlp_vana_contract__
+            return hotdog.__dlp_vana_contract__
         elif network == "satori":
-            return chatgpt.__dlp_satori_contract__
+            return hotdog.__dlp_satori_contract__
         elif network == "moksha":
-            return chatgpt.__dlp_moksha_contract__
+            return hotdog.__dlp_moksha_contract__
         else:
             return "unknown"
 
@@ -230,10 +230,10 @@ class BaseNode(ABC):
             return None
 
         if network == "vana":
-            return chatgpt.__dlp_token_vana_contract__
+            return hotdog.__dlp_token_vana_contract__
         elif network == "satori":
-            return chatgpt.__dlp_token_satori_contract__
+            return hotdog.__dlp_token_satori_contract__
         elif network == "moksha":
-            return chatgpt.__dlp_token_moksha_contract__
+            return hotdog.__dlp_token_moksha_contract__
         else:
             return "unknown"

@@ -15,4 +15,4 @@ RUN pip install poetry --no-cache-dir
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction --no-ansi
 
-CMD poetry run python -m chatgpt.nodes.validator
+CMD poetry run python -m hotdog.nodes.validator
