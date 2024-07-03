@@ -262,20 +262,33 @@ Monitor the logs for any errors. If set up correctly, you'll see the validator w
 
 ### Test Your Validator
 
-1. Visit [the demo DLP UI](https://dlp-ui.vercel.vana.com/claim/upload)
-2. Connect your wallet (must hold some VANA)
-3. Use the gear icon to set the DLP contract address and public encryption key
-4. Upload a file to submit the `addFile` transaction
-5. In the console logs, note the uploaded file URL and encryption key
-6. Use these in the `addFile` function: https://satori.vanascan.io/address/<DataLiquidityPool address\>?tab=write_contract
-7. Wait for your validator to process the file and write scores on-chain (`verifyFile` transaction)
-8. Check the UI for a reward claiming dialog and test claiming rewards
+#### For the Public Hot Dog DLP
+
+If you're validating in the [public Hot Dog DLP](#public-testnet-hot-dog-dlp), follow these steps:
+
+1. Visit the [official Hot Dog DLP UI](https://vana-hot-dog-dlp-ui.vercel.vana.com/claim).
+2. Connect your wallet (must hold some VANA).
+3. Follow the instructions on the UI to upload a file (to submit the `addFile` transaction).
+4. Wait for your validator to process the file and write scores on-chain (`verifyFile` transaction).
+5. Check the UI for a reward claiming dialog and test claiming rewards.
+
+#### For Custom DLPs
+
+If you're validating with your own or a custom DLP, follow these steps:
+
+1. Visit [the demo DLP UI](https://dlp-ui.vercel.vana.com/claim/upload).
+2. Connect your wallet (must hold some VANA).
+3. Use the gear icon to set the DLP contract address and public encryption key.
+4. Upload a file (to submit the `addFile` transaction).
+5. In the console logs, note the uploaded file URL and encryption key (you can also add files manually via https://satori.vanascan.io/address/<DataLiquidityPool address>?tab=write_contract).
+6. Wait for your validator to process the file and write scores on-chain (`verifyFile` transaction).
+7. Check the UI for a reward claiming dialog and test claiming rewards.
 
 > Note: For heavily modified DLPs, you may need to register through the Satori explorer using your wallet's browser extension:
 > 1. Import your hotkey into a browser-compatible wallet like MetaMask.
 > 2. Navigate to the Write proxy tab for the verified contract for the DLP in the Satori explorer. You can get this URL from the DLP owner.
 > 3. Connect to your hotkey with the button at the bottom of the page.
-. 4. Submit a validator registration transaction with the addresses of your hotkey and coldkey as the validator and validator owner addresses, along with an amount of the required tokens to stake. Ensure you stake at least the minimum of the specific token required by the DLP.
+> 4. Submit a validator registration transaction with the addresses of your hotkey and coldkey as the validator and validator owner addresses, along with an amount of the required tokens to stake. Ensure you stake at least the minimum of the specific token required by the DLP.
 
 ## Troubleshooting
 
