@@ -1,12 +1,13 @@
+import base64
+import gnupg
 import os
+import requests
 import tempfile
 import traceback
-import requests
 import vana
-import gnupg
-import base64
-from urllib.parse import urlparse
 from chatgpt.models.contribution import Contribution
+from chatgpt.utils.validator import evaluate_chatgpt_zip
+from urllib.parse import urlparse
 
 
 async def proof_of_contribution(file_id: int, input_url: str, input_encryption_key: str) -> Contribution:
