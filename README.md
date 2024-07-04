@@ -1,6 +1,6 @@
 <div align="center">
 
-# **Hot Dog Data Liquidity Pool** <!-- omit in toc -->
+# **ChatGPT Data Liquidity Pool** <!-- omit in toc -->
 [![Discord Chat](https://img.shields.io/discord/308323056592486420.svg)](https://discord.gg/xx98TSE8)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -25,11 +25,11 @@ Local: 1 CPU, 8GB RAM, 10GB free disk space
 AWS: t3.large, m5.large or better  
 GCP: n1-standard-2 or better  
 
-To get started with the Hot Dog DLP, follow these steps:
+To get started with the ChatGPT DLP, follow these steps:
 
 1. Clone the repository:
 ```shell
-git clone https://github.com/vana-com/vana-dlp-hotdog.git
+git clone https://github.com/vana-com/vana-dlp-chatgpt.git
 ```
 
 2. Install the required dependencies using poetry:
@@ -41,7 +41,7 @@ poetry run setup
 
 4. Run the application:
 ```shell
-poetry run python -m hotdog.nodes.validator
+poetry run python -m chatgpt.nodes.validator
 ```
 
 ## Generate validator encryption keys
@@ -61,7 +61,7 @@ To generate the encryption keypair for DLP validators:
 
 4. Copy the contents of `private_key_base64.asc` to `vana-dlp-hotdog/.env` under `PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64`.
 
-5. Paste the public key into the [DLP Demo UI](https://dlp-ui.vercel.vana.com/claim/upload) (settings icon on the top right)
+5. Paste the public key into the NEXT_PUBLIC_FILE_ENCRYPTION_PUBLIC_KEY_BASE64 value of the .env file in the [ChatGPT DLP UI](https://github.com/vana-com/vana-dlp-chatgpt-ui)
 
 ## Using the CLI
 The Vana command line interface (`vanacli`) is the primary command line tool for interacting with the Vana network.

@@ -6,7 +6,7 @@ import vana
 import gnupg
 import base64
 from urllib.parse import urlparse
-from hotdog.models.contribution import Contribution
+from chatgpt.models.contribution import Contribution
 
 
 async def proof_of_contribution(file_id: int, input_url: str, input_encryption_key: str) -> Contribution:
@@ -80,37 +80,37 @@ def download_and_decrypt_file(input_url, input_encryption_key):
     return decrypted_file_path
 
 
-def proof_of_quality(decrypted_file_path):
+def proof_of_quality(decrypted_file_path) -> float:
     """
-    Validate the decrypted file as a hotdog image.
+    Validate the decrypted file.
     :param decrypted_file_path:
-    :return: is_valid, file_score, authenticity, ownership, quality, uniqueness
+    :return:  quality_score
     """
     try:
-        is_valid = decrypted_file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))
-        return 1.0 if is_valid else 0.0
+        validation_result = evaluate_chatgpt_zip(decrypted_file_path)
+        return validation_result["score"]
     except Exception as e:
         vana.logging.error(f"Error during validation, assuming file is invalid: {e}")
         vana.logging.error(traceback.format_exc())
         return 0.0
 
 
-def proof_of_ownership(decrypted_file_path):
+def proof_of_ownership(decrypted_file_path) -> float:
     """
     Check the ownership of the decrypted file.
     :param decrypted_file_path:
-    :return:
+    :return: ownership score
     """
     # TODO: Implement ownership check via sharing a chat with the user's wallet address,
     #  and scraping it to ensure the wallet owner owns the Zip file
     return 0.0
 
 
-def proof_of_uniqueness(decrypted_file_path):
+def proof_of_uniqueness(decrypted_file_path) -> float:
     """
     Check the similarity of the decrypted file with previously validated files.
     :param decrypted_file_path:
-    :return:
+    :return: uniqueness score
     """
     # TODO: Implement a similarity check to ensure the file is not a duplicate
     #  (or very similar) to a previously validated file
@@ -123,5 +123,5 @@ def proof_of_authenticity(decrypted_file_path) -> float:
     :param decrypted_file_path:
     :return: authenticity score
     """
-    # TODO: Implement a authenticity check to ensure it is an authentic hot dog.
+    # TODO: Implement a authenticity check to ensure it originated from chatgpt.com and is not tampered with.
     return 0.0

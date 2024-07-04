@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch, mock_open, call
-from hotdog.utils.proof_of_contribution import proof_of_contribution, download_and_decrypt_file
+from chatgpt.utils.proof_of_contribution import proof_of_contribution, download_and_decrypt_file
 
 @pytest.fixture
 def mock_file_content():
@@ -15,12 +15,12 @@ def mock_encryption_key():
     return 'bW9ja19lbmNyeXB0aW9uX2tleQ=='  # base64 encoded 'mock_encryption_key'
 
 @pytest.mark.asyncio
-@patch('hotdog.utils.proof_of_contribution.download_and_decrypt_file')
-@patch('hotdog.utils.proof_of_contribution.proof_of_quality')
-@patch('hotdog.utils.proof_of_contribution.proof_of_ownership')
-@patch('hotdog.utils.proof_of_contribution.proof_of_uniqueness')
-@patch('hotdog.utils.proof_of_contribution.proof_of_authenticity')
-@patch('hotdog.utils.proof_of_contribution.os.remove')
+@patch('chatgpt.utils.proof_of_contribution.download_and_decrypt_file')
+@patch('chatgpt.utils.proof_of_contribution.proof_of_quality')
+@patch('chatgpt.utils.proof_of_contribution.proof_of_ownership')
+@patch('chatgpt.utils.proof_of_contribution.proof_of_uniqueness')
+@patch('chatgpt.utils.proof_of_contribution.proof_of_authenticity')
+@patch('chatgpt.utils.proof_of_contribution.os.remove')
 async def test_proof_of_contribution(mock_remove, mock_authenticity, mock_uniqueness, mock_ownership, mock_quality, mock_download):
     # Setup mock returns
     mock_download.return_value = 'mock_file_path'

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "hotdog"
+name = "chatgpt"
 version = "0.1.0"
 description = ""
 authors = ["Tim Nunamaker <tim@vana.com>", "Volodymyr Isai <volod@vana.com>", "Kahtaf Alam <kahtaf@vana.com>"]
@@ -37,5 +37,5 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poetry.plugins."vanacli.commands"]
-register_validator = "hotdog.commands.register_validator:RegisterValidatorCommand"
-approve_validator = "hotdog.commands.approve_validator:ApproveValidatorCommand"
+register_validator = "chatgpt.commands.register_validator:RegisterValidatorCommand"
+approve_validator = "chatgpt.commands.approve_validator:ApproveValidatorCommand"

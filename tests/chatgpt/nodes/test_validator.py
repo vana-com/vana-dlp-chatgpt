@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, Mock, AsyncMock
 
-from hotdog.nodes.validator import Validator, PeerScoringTask
+from chatgpt.nodes.validator import Validator, PeerScoringTask
 from vana.config import Config
 
 
@@ -111,7 +111,7 @@ def test_record_file_score(setup_validator):
     assert validator.state.needs_peer_scoring[0].file_id == 1
 
 @pytest.mark.asyncio
-@patch('hotdog.nodes.validator.Validator.update_validator_weights')
+@patch('chatgpt.nodes.validator.Validator.update_validator_weights')
 async def test_process_peer_scoring_queue(mock_update_weights, setup_validator):
     validator = setup_validator
 
@@ -197,8 +197,8 @@ def test_update_validator_weights(setup_validator):
     assert 0.7 < validator.state.weights["validator_2"] < 0.75
 
 @pytest.mark.asyncio
-@patch('hotdog.nodes.validator.Validator.process_peer_scoring_queue')
-@patch('hotdog.nodes.validator.Validator.concurrent_forward', new_callable=AsyncMock)
+@patch('chatgpt.nodes.validator.Validator.process_peer_scoring_queue')
+@patch('chatgpt.nodes.validator.Validator.concurrent_forward', new_callable=AsyncMock)
 async def test_run_processes_queue_on_tempo(mock_concurrent_forward, mock_process_queue, setup_validator):
     validator = setup_validator
     validator.sync = Mock()
