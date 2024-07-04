@@ -1,13 +1,13 @@
 import base64
+import gnupg
 import os
+import requests
 import tempfile
 import traceback
-
-import gnupg
-import requests
 import vana
 from chatgpt.models.contribution import Contribution
 from chatgpt.utils.validator import evaluate_chatgpt_zip
+from urllib.parse import urlparse
 
 
 async def proof_of_contribution(file_id: int, input_url: str, input_encryption_key: str) -> Contribution:
@@ -34,53 +34,56 @@ async def proof_of_contribution(file_id: int, input_url: str, input_encryption_k
 def download_and_decrypt_file(input_url, input_encryption_key):
     """
     Download the file from the input URL and decrypt it using the input encryption key.
-    :param input_url:
-    :param input_encryption_key:
-    :return:
+    :param input_url: URL of the encrypted file
+    :param input_encryption_key: Base64 encoded encrypted symmetric key
+    :return: Path to the decrypted file
     """
     temp_dir = tempfile.mkdtemp()
-    file_path = os.path.join(temp_dir, "data.zip")
+
+    # Extract file extension from URL
+    parsed_url = urlparse(input_url)
+    file_extension = os.path.splitext(parsed_url.path)[1]
+    if not file_extension:
+        file_extension = '.bin'  # Default extension if none is found
+
+    encrypted_file_path = os.path.join(temp_dir, f"encrypted_file{file_extension}")
     response = requests.get(input_url)
 
     if response.status_code != 200:
         vana.logging.error(f"Failed to download file from {input_url}")
         return None
-    else:
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
 
-        # Decode symmetric key from base64 and decrypt it using private key
-        encrypted_symmetric_key = base64.b64decode(input_encryption_key)
-        private_key_base64 = os.environ["PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64"]
-        private_key_bytes = base64.b64decode(private_key_base64)
+    with open(encrypted_file_path, 'wb') as f:
+        f.write(response.content)
 
-        # Import the private key into the gnupg keyring
-        gpg = gnupg.GPG()
-        import_result = gpg.import_keys(private_key_bytes)
-        vana.logging.info(f"Private key import result: {import_result}")
+    # Decode symmetric key from base64 and decrypt it using private key
+    encrypted_symmetric_key = base64.b64decode(input_encryption_key)
+    private_key_base64 = os.environ["PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64"]
+    private_key_bytes = base64.b64decode(private_key_base64)
 
-        # Decrypt the symmetric key using the private key and gnupg library
-        decrypted_symmetric_key = gpg.decrypt(encrypted_symmetric_key)
+    # Import the private key into the gnupg keyring
+    gpg = gnupg.GPG()
+    import_result = gpg.import_keys(private_key_bytes)
+    vana.logging.info(f"Private key import result: {import_result}")
 
-        # Print decrypted symmetric key
-        vana.logging.info(f"Decrypted symmetric key: {decrypted_symmetric_key.data}")
+    # Decrypt the symmetric key using the private key and gnupg library
+    decrypted_symmetric_key = gpg.decrypt(encrypted_symmetric_key)
 
-        # Decrypt the file using the symmetric key
-        decrypted_file_path = os.path.join(temp_dir, "decrypted_data.zip")
-        with open(file_path, 'rb') as encrypted_file, open(decrypted_file_path, 'wb') as decrypted_file:
-            # Decrypt the file using the decrypted symmetric key bytes and gnupg library
-            decrypted_data = gpg.decrypt_file(encrypted_file,
-                                              passphrase=decrypted_symmetric_key.data.decode('utf-8'))
-            vana.logging.info(f"Decryption status: {decrypted_data.status}")
-            # Write decrypted data to the decrypted file
-            decrypted_file.write(decrypted_data.data)
+    # Decrypt the file using the symmetric key
+    decrypted_file_path = os.path.join(temp_dir, f"decrypted_file{file_extension}")
+    with open(encrypted_file_path, 'rb') as encrypted_file, open(decrypted_file_path, 'wb') as decrypted_file:
+        decrypted_data = gpg.decrypt_file(encrypted_file,
+                                          passphrase=decrypted_symmetric_key.data.decode('utf-8'))
+        vana.logging.info(f"Decryption status: {decrypted_data.status}")
+        decrypted_file.write(decrypted_data.data)
 
-        return decrypted_file_path
+    vana.logging.info(f"Successfully decrypted file: {decrypted_file_path}")
+    return decrypted_file_path
 
 
 def proof_of_quality(decrypted_file_path) -> float:
     """
-    Ensure the decrypted file is of high quality.
+    Validate the decrypted file.
     :param decrypted_file_path:
     :return:  quality_score
     """

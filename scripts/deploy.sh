@@ -7,7 +7,7 @@
 
 source "$(dirname "$0")/env.sh"
 
-DEFAULT_NAMESPACE=default
+DEFAULT_NAMESPACE=satori-chatgpt
 
 PROJECT=${PROJECT:-corsali-production}
 NUM_NODES=${NUM_NODES:-3}
@@ -61,7 +61,7 @@ echo "Using image: $IMAGE_TAG"
 
 # Loop through node creation or update
 for ((i=1; i<=NUM_NODES; i++)); do
-  VM_NAME="${NAMESPACE}-chatgpt-validator-$i"
+  VM_NAME="${NAMESPACE}-validator-$i"
 
   # Check if the instance exists
   if gcloud compute instances describe "$VM_NAME" --project="$PROJECT" --zone="$ZONE" > /dev/null 2>&1; then
