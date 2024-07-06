@@ -14,7 +14,7 @@ By continuing in this tutorial, you agree to the following
 ### Testnet disclaimers
 
 Incentive mechanisms running on the testnet are open to anyone, and although these mechanisms on testnet do not emit
-real DAT, they cost you test DAT which you must get from a faucet. Testnet tokens, including testnet DAT and dataset-specific tokens like testnet GPTDAT, have no value. 
+real VANA, they cost you test VANA which you must get from a faucet. Testnet tokens, including testnet VANA and dataset-specific tokens like testnet GPTDAT, have no value. 
 
 ### Words of Wisdom
 
@@ -79,7 +79,7 @@ Add the Satori Testnet [network](https://support.metamask.io/networks-and-sidech
 Network name: Satori Testnet
 RPC URL: https://rpc.satori.vana.org
 Chain ID: 14801
-Currency: DAT
+Currency: VANA
 ```
 Note you can only use the faucet once per day. Use the testnet faucet available at https://faucet.vana.org to fund your wallets, or ask a DAT holder to send you some test DAT tokens.
 
@@ -91,7 +91,7 @@ jq -r '.privateKey' ~/.vana/wallets/validator_4001/coldkey
 jq -r '.privateKey' ~/.vana/wallets/validator_4000/hotkeys/default
 jq -r '.privateKey' ~/.vana/wallets/validator_4001/hotkeys/default
 ```
-Now, send DAT from your metamask wallet to these five wallets. 
+Now, send VANA from your metamask wallet to these five wallets. 
 You are funding the coldkey wallets for use on the network.
 
 ## Deploy your own DLP smart contracts on Testnet
