@@ -263,6 +263,7 @@ class Validator(BaseNode):
         validator_address = validator_hotkey.address
 
         try:
+            # Get the next file to verify
             get_next_file_to_verify_fn = self.dlp_contract.functions.getNextFileToVerify
             next_file = safe_rpc_call(self.chain_manager, get_next_file_to_verify_fn, validator_address)
 
