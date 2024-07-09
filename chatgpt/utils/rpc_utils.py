@@ -88,6 +88,13 @@ def safe_send_transaction(chain_manager, transaction_function, wallet, *args, **
     :return: Transaction receipt
     """
     def send_transaction():
-        return chain_manager.send_transaction(transaction_function(*args, **kwargs), wallet)
+        try:
+            return chain_manager.send_transaction(transaction_function, wallet)
+        except Exception as e:
+            vana.logging.error(f"Error in send_transaction: {str(e)}")
+            vana.logging.error(f"Transaction function: {transaction_function}")
+            vana.logging.error(f"Arguments: {args}")
+            vana.logging.error(f"Keyword arguments: {kwargs}")
+            raise e
 
     return rpc_call_with_retry(send_transaction)
