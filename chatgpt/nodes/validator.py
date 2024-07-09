@@ -273,55 +273,44 @@ class Validator(BaseNode):
 
             # Check if next_file is a tuple (as expected) or a list (from raw decoding)
             if isinstance(next_file, (tuple, list)):
-                if len(next_file) == 0 or next_file[0] == 0:
+                # Unpack all values from next_file
+                file_id, owner_address, url, encrypted_key, added_timestamp, added_at_block, valid, finalized, score, authenticity, ownership, quality, uniqueness, reward, reward_withdrawn, verifications_count = next_file
+
+                if file_id == 0:
                     vana.logging.info("No files to verify. Sleeping for 5 seconds.")
                     await asyncio.sleep(5)
                     return
 
-                # Unpack all values from next_file
-                (
-                    file_id, owner_address, url, encrypted_key, added_timestamp,
-                    added_at_block, valid, finalized, score, authenticity, ownership,
-                    quality, uniqueness, reward, reward_withdrawn, verifications_count
-                ) = next_file
+                vana.logging.debug(f"Received file_id: {file_id}, owner_address: {owner_address}, url: {url}, encrypted_key: {encrypted_key}, added_timestamp: {added_timestamp}, added_at_block: {added_at_block}, valid: {valid}, finalized: {finalized}, score: {score}, authenticity: {authenticity}, ownership: {ownership}, quality: {quality}, uniqueness: {uniqueness}, reward: {reward}, reward_withdrawn: {reward_withdrawn}, verifications_count: {verifications_count}")
 
-                vana.logging.debug(
-                    f"Received file_id: {file_id}, owner_address: {owner_address}, url: {url}, "
-                    f"encrypted_key: {encrypted_key}, added_timestamp: {added_timestamp}, "
-                    f"added_at_block: {added_at_block}, valid: {valid}, finalized: {finalized}, score: {score}, "
-                    f"authenticity: {authenticity}, ownership: {ownership}, quality: {quality}, "
-                    f"uniqueness: {uniqueness}, reward: {reward}, reward_withdrawn: {reward_withdrawn}, "
-                    f"verifications_count: {verifications_count}"
-                )
+                contribution = await proof_of_contribution(file_id, url, encrypted_key)
+                vana.logging.info(f"File is valid: {contribution.is_valid}, file score: {contribution.score()}")
+
+                # Call verifyFile function on the DLP contract to set the file's scores
+                verify_file_fn = self.dlp_contract.functions.verifyFile(
+                    file_id,
+                    contribution.is_valid,
+                    as_wad(contribution.score()),
+                    as_wad(contribution.scores.authenticity),
+                    as_wad(contribution.scores.ownership),
+                    as_wad(contribution.scores.quality),
+                    as_wad(contribution.scores.uniqueness))
+                safe_send_transaction(self.chain_manager, verify_file_fn, self.wallet.hotkey)
+
+                # Add this file to the peer scoring queue
+                self.record_file_score(file_id, {
+                    "score": contribution.score(),
+                    "is_valid": contribution.is_valid,
+                    "authenticity": contribution.scores.authenticity,
+                    "ownership": contribution.scores.ownership,
+                    "quality": contribution.scores.quality,
+                    "uniqueness": contribution.scores.uniqueness
+                })
 
             else:
                 vana.logging.error(f"Unexpected format for next_file: {next_file}")
                 await asyncio.sleep(5)
                 return
-
-            contribution = await proof_of_contribution(file_id, url, encrypted_key)
-            vana.logging.info(f"File is valid: {contribution.is_valid}, file score: {contribution.score()}")
-
-            # Call verifyFile function on the DLP contract to set the file's scores
-            verify_file_fn = self.dlp_contract.functions.verifyFile(
-                file_id,
-                contribution.is_valid,
-                as_wad(contribution.score()),
-                as_wad(contribution.scores.authenticity),
-                as_wad(contribution.scores.ownership),
-                as_wad(contribution.scores.quality),
-                as_wad(contribution.scores.uniqueness))
-            safe_send_transaction(self.chain_manager, verify_file_fn, self.wallet.hotkey)
-
-            # Add this file to the peer scoring queue
-            self.record_file_score(file_id, {
-                "score": contribution.score(),
-                "is_valid": contribution.is_valid,
-                "authenticity": contribution.scores.authenticity,
-                "ownership": contribution.scores.ownership,
-                "quality": contribution.scores.quality,
-                "uniqueness": contribution.scores.uniqueness
-            })
 
         except Exception as e:
             vana.logging.error(f"Error during forward process: {e}")
