@@ -24,6 +24,7 @@ from abc import ABC, abstractmethod
 from chatgpt.utils.config import check_config, add_args, config
 from chatgpt.utils.misc import ttl_get_block
 from chatgpt.utils.validator import as_wad
+from chatgpt.utils.rpc_utils import safe_rpc_call, safe_send_transaction
 
 
 class BaseNode(ABC):
@@ -166,26 +167,33 @@ class BaseNode(ABC):
         """
         Save the weights of all validators to the chain.
         """
-        self.state.weights[self.wallet.hotkey.address] = 1.0  # The current node always has a weight of 1
-        vana.logging.info(f"Writing weights on-chain: {self.state.weights}")
-        update_weights_fn = self.dlp_contract.functions.updateWeights(
-            list(self.state.weights.keys()),
-            [as_wad(weight) for weight in self.state.weights.values()]
-        )
-        self.chain_manager.send_transaction(update_weights_fn, self.wallet.hotkey)
+        try:
+            self.state.weights[self.wallet.hotkey.address] = 1.0  # The current node always has a weight of 1
+            vana.logging.info(f"Writing weights on-chain: {self.state.weights}")
+            update_weights_fn = self.dlp_contract.functions.updateWeights(
+                list(self.state.weights.keys()),
+                [as_wad(weight) for weight in self.state.weights.values()]
+            )
+            safe_send_transaction(self.chain_manager, update_weights_fn, self.wallet.hotkey)
+        except Exception as e:
+            vana.logging.error(f"Failed to save weights: {str(e)}")
 
     def check_registered(self):
-        validator_count = self.chain_manager.read_contract_fn(self.dlp_contract.functions.activeValidatorsListsCount())
-        active_validator_addresses: list[str] = self.chain_manager.read_contract_fn(
-            self.dlp_contract.functions.activeValidatorsLists(validator_count))
-        self.state.set_hotkeys(active_validator_addresses)
-
-        if not active_validator_addresses.__contains__(self.wallet.hotkey.address):
-            vana.logging.error(
-                f"Wallet: {self.wallet} is not registered on DLP {self.config.dlpuid}."
+        try:
+            validator_count = safe_rpc_call(self.chain_manager, self.dlp_contract.functions.activeValidatorsListsCount)
+            active_validator_addresses = safe_rpc_call(
+                self.chain_manager,
+                self.dlp_contract.functions.activeValidatorsLists,
+                validator_count
             )
-            # Do not exit, registration status can change
-            # exit()
+            self.state.set_hotkeys(active_validator_addresses)
+
+            if not active_validator_addresses.__contains__(self.wallet.hotkey.address):
+                vana.logging.error(
+                    f"Wallet: {self.wallet} is not registered on DLP {self.config.dlpuid}."
+                )
+        except Exception as e:
+            vana.logging.error(f"Failed to check registration status: {str(e)}")
 
     @staticmethod
     def determine_dlp_contract(network: str):

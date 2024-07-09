@@ -1,7 +1,9 @@
 import time
 import random
-from web3.exceptions import Web3Exception
+from web3.exceptions import Web3Exception, ContractLogicError
+from eth_abi import decode
 import vana
+
 
 def rpc_call_with_retry(func, max_retries=3, initial_delay=1, max_delay=60):
     """
@@ -30,6 +32,7 @@ def rpc_call_with_retry(func, max_retries=3, initial_delay=1, max_delay=60):
 
     raise Exception("Max retries reached. RPC call failed.")
 
+
 def safe_rpc_call(chain_manager, contract_function, *args, **kwargs):
     """
     Safely make an RPC call using the chain manager.
@@ -38,12 +41,40 @@ def safe_rpc_call(chain_manager, contract_function, *args, **kwargs):
     :param contract_function: The contract function to call
     :param args: Positional arguments for the contract function
     :param kwargs: Keyword arguments for the contract function
-    :return: Result of the RPC call
+    :return: Result of the RPC call or None if decoding fails
     """
     def rpc_call():
-        return chain_manager.read_contract_fn(contract_function(*args, **kwargs))
+        try:
+            vana.logging.debug(f"Calling contract function '{contract_function}' with args: {args}, kwargs: {kwargs}")
+            result = chain_manager.read_contract_fn(contract_function(*args, **kwargs))
+            vana.logging.debug(f"Raw result from contract for calling '{contract_function}': '{result}'")
+            return result
+        except ContractLogicError as e:
+            vana.logging.warning(f"Contract logic error: {str(e)}")
+            return None
+        except Exception as e:
+            vana.logging.error(f"Failed to read from contract function: {str(e)}")
+
+            # Attempt to decode raw return data
+            try:
+                raw_return_data = e.args[0]['data']
+                vana.logging.debug(f"Raw return data: {raw_return_data}")
+
+                # Get the output types from the contract function
+                output_types = contract_function.abi['outputs']
+                type_strings = [output['type'] for output in output_types]
+
+                # Attempt to decode
+                decoded = decode(type_strings, raw_return_data)
+                vana.logging.debug(f"Decoded data: {decoded}")
+                return decoded
+            except Exception as decode_error:
+                vana.logging.error(f"Failed to decode raw return data: {str(decode_error)}")
+
+            return None
 
     return rpc_call_with_retry(rpc_call)
+
 
 def safe_send_transaction(chain_manager, transaction_function, wallet, *args, **kwargs):
     """

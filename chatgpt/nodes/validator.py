@@ -263,29 +263,41 @@ class Validator(BaseNode):
         validator_address = validator_hotkey.address
 
         try:
-            # Get the next file to verify
-            get_next_file_to_verify_fn = self.dlp_contract.functions.getNextFileToVerify(validator_address)
-            next_file = safe_rpc_call(self.chain_manager, get_next_file_to_verify_fn)
-            if not next_file or next_file[0] == 0:
-                vana.logging.info("No files to verify. Sleeping for 5 seconds.")
+            get_next_file_to_verify_fn = self.dlp_contract.functions.getNextFileToVerify
+            next_file = safe_rpc_call(self.chain_manager, get_next_file_to_verify_fn, validator_address)
+
+            if next_file is None:
+                vana.logging.info("Failed to get next file to verify. Sleeping for 5 seconds.")
                 await asyncio.sleep(5)
                 return
 
-            # Unpack all values from next_file
-            (
-                file_id, owner_address, url, encrypted_key, added_timestamp,
-                added_at_block, valid, finalized, score, authenticity, ownership,
-                quality, uniqueness, reward, reward_withdrawn, verifications_count
-            ) = next_file
+            # Check if next_file is a tuple (as expected) or a list (from raw decoding)
+            if isinstance(next_file, (tuple, list)):
+                if len(next_file) == 0 or next_file[0] == 0:
+                    vana.logging.info("No files to verify. Sleeping for 5 seconds.")
+                    await asyncio.sleep(5)
+                    return
 
-            vana.logging.debug(
-                f"Received file_id: {file_id}, owner_address: {owner_address}, url: {url}, "
-                f"encrypted_key: {encrypted_key}, added_timestamp: {added_timestamp}, "
-                f"added_at_block: {added_at_block}, valid: {valid}, finalized: {finalized}, score: {score}, "
-                f"authenticity: {authenticity}, ownership: {ownership}, quality: {quality}, "
-                f"uniqueness: {uniqueness}, reward: {reward}, reward_withdrawn: {reward_withdrawn}, "
-                f"verifications_count: {verifications_count}"
-            )
+                # Unpack all values from next_file
+                (
+                    file_id, owner_address, url, encrypted_key, added_timestamp,
+                    added_at_block, valid, finalized, score, authenticity, ownership,
+                    quality, uniqueness, reward, reward_withdrawn, verifications_count
+                ) = next_file
+
+                vana.logging.debug(
+                    f"Received file_id: {file_id}, owner_address: {owner_address}, url: {url}, "
+                    f"encrypted_key: {encrypted_key}, added_timestamp: {added_timestamp}, "
+                    f"added_at_block: {added_at_block}, valid: {valid}, finalized: {finalized}, score: {score}, "
+                    f"authenticity: {authenticity}, ownership: {ownership}, quality: {quality}, "
+                    f"uniqueness: {uniqueness}, reward: {reward}, reward_withdrawn: {reward_withdrawn}, "
+                    f"verifications_count: {verifications_count}"
+                )
+
+            else:
+                vana.logging.error(f"Unexpected format for next_file: {next_file}")
+                await asyncio.sleep(5)
+                return
 
             contribution = await proof_of_contribution(file_id, url, encrypted_key)
             vana.logging.info(f"File is valid: {contribution.is_valid}, file score: {contribution.score()}")
