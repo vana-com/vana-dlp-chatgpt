@@ -24,6 +24,7 @@ from chatgpt.nodes.base_node import BaseNode
 from chatgpt.utils.config import add_validator_args
 from chatgpt.utils.proof_of_contribution import proof_of_contribution
 from chatgpt.utils.validator import as_wad
+from chatgpt.utils.rpc_utils import safe_rpc_call, safe_send_transaction
 from dataclasses import dataclass, field
 from traceback import print_exception
 from typing import Dict, List, Any, Tuple
@@ -160,41 +161,49 @@ class Validator(BaseNode):
         current_block = self.chain_manager.get_current_block()
 
         for task in self.state.needs_peer_scoring[:]:
-            file_data_tuple = self.chain_manager.read_contract_fn(self.dlp_contract.functions.files(task.file_id))
+            try:
+                file_data_tuple = safe_rpc_call(self.chain_manager, self.dlp_contract.functions.files, task.file_id)
 
-            if not file_data_tuple:
-                continue
-
-            file_data = transform_file_data(file_data_tuple)
-
-            for validator in task.active_validators[:]:
-                if validator in task.processed_validators:
+                if not file_data_tuple:
                     continue
 
-                file_score_tuple = self.chain_manager.read_contract_fn(
-                    self.dlp_contract.functions.fileScores(task.file_id, validator)
-                )
-                validator_score = transform_file_score(file_score_tuple)
+                file_data = transform_file_data(file_data_tuple)
 
-                if validator_score:
-                    performance_score = self.score_validator_performance(task.own_submission, validator_score,
-                                                                         file_data)
-                    if validator not in validator_scores:
-                        validator_scores[validator] = []
-                    validator_scores[validator].append(performance_score)
-                    task.active_validators.remove(validator)
-                    task.processed_validators.append(validator)
-                elif current_block - task.added_at_block >= self.config.node.max_wait_blocks:
-                    vana.logging.info(
-                        f"Validator {validator} did not respond in time for file {task.file_id}. Scoring 0.")
-                    if validator not in validator_scores:
-                        validator_scores[validator] = []
-                    validator_scores[validator].append(0)
-                    task.active_validators.remove(validator)
-                    task.processed_validators.append(validator)
+                for validator in task.active_validators[:]:
+                    if validator in task.processed_validators:
+                        continue
 
-            if not task.active_validators:
-                self.state.needs_peer_scoring.remove(task)
+                    file_score_tuple = safe_rpc_call(
+                        self.chain_manager,
+                        self.dlp_contract.functions.fileScores,
+                        task.file_id,
+                        validator
+                    )
+                    validator_score = transform_file_score(file_score_tuple)
+
+                    if validator_score:
+                        performance_score = self.score_validator_performance(task.own_submission, validator_score,
+                                                                             file_data)
+                        if validator not in validator_scores:
+                            validator_scores[validator] = []
+                        validator_scores[validator].append(performance_score)
+                        task.active_validators.remove(validator)
+                        task.processed_validators.append(validator)
+                    elif current_block - task.added_at_block >= self.config.node.max_wait_blocks:
+                        vana.logging.info(
+                            f"Validator {validator} did not respond in time for file {task.file_id}. Scoring 0.")
+                        if validator not in validator_scores:
+                            validator_scores[validator] = []
+                        validator_scores[validator].append(0)
+                        task.active_validators.remove(validator)
+                        task.processed_validators.append(validator)
+
+                if not task.active_validators:
+                    self.state.needs_peer_scoring.remove(task)
+
+            except Exception as e:
+                vana.logging.error(f"Error processing peer scoring task: {e}")
+                vana.logging.error(traceback.format_exc())
 
         self.update_validator_weights(validator_scores)
         self.state.save()
@@ -256,7 +265,7 @@ class Validator(BaseNode):
         try:
             # Get the next file to verify
             get_next_file_to_verify_fn = self.dlp_contract.functions.getNextFileToVerify(validator_address)
-            next_file = self.chain_manager.read_contract_fn(get_next_file_to_verify_fn)
+            next_file = safe_rpc_call(self.chain_manager, get_next_file_to_verify_fn)
             if not next_file or next_file[0] == 0:
                 vana.logging.info("No files to verify. Sleeping for 5 seconds.")
                 await asyncio.sleep(5)
@@ -290,7 +299,7 @@ class Validator(BaseNode):
                 as_wad(contribution.scores.ownership),
                 as_wad(contribution.scores.quality),
                 as_wad(contribution.scores.uniqueness))
-            self.chain_manager.send_transaction(verify_file_fn, self.wallet.hotkey)
+            safe_send_transaction(self.chain_manager, verify_file_fn, self.wallet.hotkey)
 
             # Add this file to the peer scoring queue
             self.record_file_score(file_id, {
