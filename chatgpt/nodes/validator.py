@@ -328,44 +328,40 @@ class Validator(BaseNode):
 
         # This loop maintains the validator's operations until intentionally stopped.
         try:
-            while not self.should_exit:
-                try:
-                    vana.logging.info(f"step({self.step}) block({self.block})")
+            while True:
+                vana.logging.info(f"step({self.step}) block({self.block})")
 
-                    # Run multiple forwards concurrently.
-                    self.loop.run_until_complete(self.concurrent_forward())
+                # Run multiple forwards concurrently.
+                self.loop.run_until_complete(self.concurrent_forward())
 
-                    # Process peer scoring queue every tempo period
-                    current_block = self.chain_manager.get_current_block()
-                    if current_block % self.config.dlp.tempo == 0:
-                        self.loop.run_until_complete(self.process_peer_scoring_queue())
+                # Process peer scoring queue every tempo period
+                current_block = self.chain_manager.get_current_block()
+                if current_block % self.config.dlp.tempo == 0:
+                    self.loop.run_until_complete(self.process_peer_scoring_queue())
 
-                    # Sync state and potentially set weights.
-                    self.sync()
+                # Check if we should exit.
+                if self.should_exit:
+                    break
 
-                    self.step += 1
+                # Sync state and potentially set weights.
+                self.sync()
 
-                except Exception as e:
-                    vana.logging.error(f"Error during validation step: {str(e)}")
-                    vana.logging.debug(
-                        print_exception(type(e), e, e.__traceback__)
-                    )
-                    # Wait for a short period before retrying
-                    time.sleep(30)
+                self.step += 1
 
+        # If someone intentionally stops the validator, it'll safely terminate operations.
         except KeyboardInterrupt:
-            vana.logging.info("Keyboard interrupt received. Shutting down gracefully...")
-        except Exception as err:
-            vana.logging.error(f"Unexpected error in main loop: {str(err)}")
-            vana.logging.debug(
-                print_exception(type(err), err, err.__traceback__)
-            )
-        finally:
-            # Cleanup code
             if hasattr(self, 'node_server') and self.node_server:
                 self.node_server.stop()
                 self.node_server.unserve(dlp_uid=self.config.dlpuid, chain_manager=self.chain_manager)
-            vana.logging.success("Validator has been stopped.")
+            vana.logging.success("Validator killed by keyboard interrupt.")
+            exit()
+
+        # In case of unforeseen errors, the validator will log the error and continue operations.
+        except Exception as err:
+            vana.logging.error("Error during validation", str(err))
+            vana.logging.debug(
+                print_exception(type(err), err, err.__traceback__)
+            )
 
     def run_in_background_thread(self):
         """
@@ -421,4 +417,15 @@ class Validator(BaseNode):
 
 if __name__ == "__main__":
     vana.trace()
-    Validator().run()
+    try:
+        while True:
+            try:
+                validator = Validator()
+                asyncio.run(validator.run())
+            except Exception as e:
+                vana.logging.error(f"An error occurred: {str(e)}")
+                vana.logging.error("Restarting the validator in 30 seconds...")
+                time.sleep(30)
+    finally:
+        vana.logging.info("Validator stopped.")
+        sys.exit(0)
