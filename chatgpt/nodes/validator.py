@@ -427,8 +427,8 @@ if __name__ == "__main__":
                 break
             except Exception as e:
                 vana.logging.error(f"An error occurred: {str(e)}")
-                vana.logging.error("Restarting the validator in 5 seconds...")
-                asyncio.sleep(5)
+                vana.logging.error("Restarting the validator in 30 seconds...")
+                asyncio.sleep(30)
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received. Exiting...")
     finally:
