@@ -15,6 +15,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+import sys
 import argparse
 import asyncio
 import threading
@@ -27,6 +28,7 @@ from chatgpt.utils.validator import as_wad
 from dataclasses import dataclass, field
 from traceback import print_exception
 from typing import Dict, List, Any, Tuple
+import time
 
 
 @dataclass
@@ -54,6 +56,7 @@ def transform_tuple(data_tuple: Tuple[Any, ...], field_specs: List[Tuple[str, bo
         else:
             data_dict[name] = value
     return data_dict
+
 
 def transform_file_data(file_data_tuple: Tuple[Any, ...]) -> Dict[str, Any]:
     """
@@ -414,4 +417,15 @@ class Validator(BaseNode):
 
 if __name__ == "__main__":
     vana.trace()
-    Validator().run()
+    try:
+        while True:
+            try:
+                validator = Validator()
+                asyncio.run(validator.run())
+            except Exception as e:
+                vana.logging.error(f"An error occurred: {str(e)}")
+                vana.logging.error("Restarting the validator in 30 seconds...")
+                time.sleep(30)
+    finally:
+        vana.logging.info("Validator stopped.")
+        sys.exit(0)
