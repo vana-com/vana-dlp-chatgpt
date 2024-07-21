@@ -424,6 +424,7 @@ if __name__ == "__main__":
                 asyncio.run(validator.run())
             except Exception as e:
                 vana.logging.error(f"An error occurred: {str(e)}")
+                vana.logging.error(traceback.format_exc())
                 vana.logging.error("Restarting the validator in 30 seconds...")
                 time.sleep(30)
     finally:
