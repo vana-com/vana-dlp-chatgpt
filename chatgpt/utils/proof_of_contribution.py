@@ -44,7 +44,7 @@ def download_and_decrypt_file(input_url, input_encryption_key):
     parsed_url = urlparse(input_url)
     file_extension = os.path.splitext(parsed_url.path)[1]
     if not file_extension:
-        file_extension = '.bin'  # Default extension if none is found
+        file_extension = '.zip'
 
     encrypted_file_path = os.path.join(temp_dir, f"encrypted_file{file_extension}")
     response = requests.get(input_url)
