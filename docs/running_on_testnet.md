@@ -86,6 +86,7 @@ Additional for DLP creators:
    - RPC URL: https://rpc.satori.vana.org
    - Chain ID: 14801
    - Currency: VANA
+   - Block Explorer: https://satori.vanascan.io/
 
 7. Export your private keys. Follow the prompts and securely save the displayed private keys:
    ```bash
@@ -213,14 +214,39 @@ For non-DLP creators, request from the DLP creator:
 
 1. Ensure you're in the `vana-dlp-chatgpt` directory:
    ```bash
+   cd
    cd vana-dlp-chatgpt
    ```
-
-2. If you're a non-DLP creator, edit the `.env` file with the information provided by the DLP creator:
+2. Retrieve the public key in base64 format to replace it in the .env file..
+   ```bash
+   cat public_key_base64.asc
    ```
-   DLP_SATORI_CONTRACT=0x... (DataLiquidityPool address)
-   DLP_TOKEN_SATORI_CONTRACT=0x... (DataLiquidityPoolToken address)
-   PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64=... (base64-encoded private key--yes, PUBLIC is a misnomer)
+
+3. If you're a non-DLP creator, edit the `.env` file with the information provided by the DLP creator:
+    ```bash
+   nano .env
+    ```
+    Update the `.env` file in the `vana-dlp-chatgpt` directory:
+   ```
+   # Vana Satori Testnet Configuration
+   OD_CHAIN_NETWORK=satori
+   OD_CHAIN_NETWORK_ENDPOINT=https://rpc.satori.vana.org
+
+   # Optional: OpenAI API key for data quality checks
+   OPENAI_API_KEY="sk-proj-xxx"
+
+   # DLP Smart Contract Addresses
+   DLP_CONTRACT_ADDRESS=0x...            # DataLiquidityPool contract
+   DLP_MOKSHA_CONTRACT=0xee4e3Fd107BE4097718B8aACFA3a8d2d9349C9a5
+   DLP_SATORI_CONTRACT=0x...             # DataLiquidityPool contract
+
+   # DLP Token Contract Addresses
+   DLP_TOKEN_VANA_CONTRACT=0x...         # DataLiquidityPoolToken contract
+   DLP_TOKEN_MOKSHA_CONTRACT=0xF1925473bA6aa147EeB2529197C2704454D66b43
+   DLP_TOKEN_SATORI_CONTRACT=0x...       # DataLiquidityPoolToken contract
+
+   # Private Key for Validator (Public Key is a misnomer)
+   PRIVATE_FILE_ENCRYPTION_PUBLIC_KEY_BASE64=...  # base64-encoded public key
    ```
 
 ### Fund Validator with DLP Tokens
