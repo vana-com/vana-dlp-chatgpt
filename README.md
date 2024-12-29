@@ -8,7 +8,7 @@
 
 ### The first decentralized network for user-owned data <!-- omit in toc -->
 
-[Discord](https://discord.gg/xx98TSE8) • [Network](https://satori.vanascan.io)
+[Discord](https://discord.gg/xx98TSE8) • [Mainnet](https://vanascan.io) • [Testnet](https://moksha.vanascan.io)
 
 </div>
 
