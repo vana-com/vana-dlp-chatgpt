@@ -297,5 +297,5 @@ If you encounter issues:
 - Verify your wallet has sufficient VANA and DLP tokens in both coldkey and hotkey addresses
 - Check the validator logs for specific error messages
 
-For further assistance, please join our [Discord community](https://discord.com/invite/Wv2vtBazMR).
+For further assistance, please join our [Discord community](https://discord.gg/vanaofficial).
 
