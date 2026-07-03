@@ -1,14 +1,14 @@
 <div align="center">
 
 # **ChatGPT Data Liquidity Pool** <!-- omit in toc -->
-[![Discord Chat](https://img.shields.io/discord/308323056592486420.svg)](https://discord.gg/xx98TSE8)
+[![Discord Chat](https://img.shields.io/discord/308323056592486420.svg)](https://discord.gg/vanaofficial)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
 ### The first decentralized network for user-owned data <!-- omit in toc -->
 
-[Discord](https://discord.gg/xx98TSE8) • [Mainnet](https://vanascan.io) • [Testnet](https://moksha.vanascan.io)
+[Discord](https://discord.gg/vanaofficial) • [Mainnet](https://vanascan.io) • [Testnet](https://moksha.vanascan.io)
 
 </div>
 
